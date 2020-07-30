@@ -1,0 +1,28 @@
+{
+  "name": "vector-web-setup",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "browserify": "^16.5.1",
+    "commander": "^5.1.0",
+    "ejs": "^3.1.3",
+    "express": "^4.17.1",
+    "less": "^3.11.2",
+    "lessc": "^1.0.2"
+  },
+  "main": "vector-web-setup.js",
+  "bin": "vector-web-setup.js",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "cross-spawn": "^7.0.3",
+    "mocha": "^8.0.1"
+  },
+  "scripts": {
+    "vector-setup": "node vector-setup.js",
+    "test": "mocha test/*"
+  },
+  "author": "",
+  "license": "ISC"
+}

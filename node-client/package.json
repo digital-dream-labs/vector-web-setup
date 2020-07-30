@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "cli-progress": "^2.1.1",
+    "commander": "^2.19.0",
+    "libsodium": "^0.7.3",
+    "libsodium-wrappers": "^0.7.3",
+    "mdns-js": "^1.0.3",
+    "nconf": "^0.10.0",
+    "noble-mac": "github:Timeular/noble-mac#master",
+    "node-wifi": "^2.0.5",
+    "ping": "^0.2.2",
+    "request": "^2.88.0",
+    "string-argv": "^0.1.1",
+    "xpc-connection": "github:sandeepmistry/node-xpc-connection#pull/26/head"
+  },
+  "resolutions": {
+    "noble-mac": "Timeular/noble-mac#head",
+    "xpc-connection": "sandeepmistry/node-xpc-connection#26/head"
+  }
+}

@@ -1,0 +1,107 @@
+@size: 8px;
+
+.pterm-main {
+  font-family: 'Ubuntu Mono', monospace;
+  padding:20px;
+  color:#4FED94;  
+  height:100%;
+  box-sizing:border-box;
+  overflow-y:scroll;
+}
+
+.pterm-line {
+  display:flex;
+  margin-bottom: 4px;
+}
+
+.pterm-text {
+  white-space:pre;
+}
+
+.pterm-text::selection {
+  color:#00672d;
+  background: #FFF;
+}
+
+.pterm-prompt {
+  font-size:@size * 2;
+  margin-right:@size;
+}
+
+.pterm-row {
+  font-size:@size * 2;
+  height: @size * 2;
+  overflow: hidden;
+  position: relative;
+  min-width:@size;
+}
+
+.pterm-cursor {
+  background-color:#4FED94;
+  width:@size;
+  height:@size * 2;
+  position:absolute;
+  top:0;
+  left:0;
+  animation-name: pterm-cursor-blink;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in;
+}
+
+.pterm-red {
+  line-height:@size * 2;
+  color:#ff7070;
+}
+
+.pterm-yellow {
+  line-height:@size * 2;
+  color:#f8ff86;
+}
+
+.pterm-green {
+  line-height:@size * 2;
+  color:#0F0;
+}
+
+.pterm-blue {
+  line-height:@size * 2;
+  color:#78aeff;
+}
+
+.pterm-row.pterm-full {
+  width:100%;
+}
+
+.pterm-progress-bar {
+  height:@size * 2;
+  width:100%; 
+  background-color:#1e5737;
+}
+
+.pterm-progress-bar-track {
+  height:@size * 2;
+  width:0%;
+  background-color:#4FED94;
+  transition:width .5s;
+}
+
+.pterm-button {
+  background-color:#4FED94;
+  color:#000;
+  height:@size * 2;
+  border-radius:4px;
+}
+
+.pterm-no-transition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
+@keyframes pterm-cursor-blink {
+  from {background-color: rgba(79,237,148,0.8);}
+  to {background-color:rgba(0,0,0,0);}
+}

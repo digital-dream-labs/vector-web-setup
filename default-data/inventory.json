@@ -1,0 +1,9 @@
+{
+  "prod": [
+    {
+      "url": " http://ota.global.anki-services.com/vic/prod/full/latest.ota",
+      "name": "latest.ota",
+      "checksum": "e01e49e7183f6e0b279d875bcd6c0e39daea0ba6a418330ed3f7d14aeb850434"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "stacks": {
+    "prod": {
+      "accountEndpoints": "https://accounts.api.anki.com",
+      "apiKeys": "luyain9ep5phahP8aph8xa"
+    }
+  }
+}
