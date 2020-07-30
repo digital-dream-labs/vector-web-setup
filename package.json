@@ -23,6 +23,6 @@
     "vector-setup": "node vector-setup.js",
     "test": "mocha test/*"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Digital Dream Labs",
+  "license": "MIT"
 }

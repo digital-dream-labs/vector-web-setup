@@ -1,3 +1,5 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details */
+
 const _noble = require('noble-mac');
 const _bleProtocol = require('../generated/bleMessageProtocol.js');
 

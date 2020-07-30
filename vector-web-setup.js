@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
+
+
+
 var commander = require("commander");
 
 const program = new commander.Command();

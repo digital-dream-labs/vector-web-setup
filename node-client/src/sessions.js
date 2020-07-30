@@ -1,3 +1,4 @@
+/*  Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details */
 var nconf = require('nconf');
 const { RtsCliUtil } = require('../generated/rtsCliUtil.js');
 

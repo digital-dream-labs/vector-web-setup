@@ -1,3 +1,4 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
 class Blesh {
   constructor() {
   } 

@@ -1,3 +1,5 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
+
 var { RtsCliUtil } = require('./rtsCliUtil.js');
 var { Anki } = require('./messageExternalComms.js');
 var { Blesh } = require('./blesh.js');

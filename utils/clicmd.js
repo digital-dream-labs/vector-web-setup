@@ -1,3 +1,5 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
+
 "use strict";
 
 const { constants } = require("os");

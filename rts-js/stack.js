@@ -1,3 +1,5 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
+
 const ACCOUNT_ENDPOINTS = "accountEndpoints";
 const API_KEYS = "apiKeys";
 

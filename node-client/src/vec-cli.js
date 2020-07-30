@@ -1,3 +1,5 @@
+/* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details */
+
 var readline = require('readline');
 var program = require('commander');
 var stringArgv = require('string-argv');

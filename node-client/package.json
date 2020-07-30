@@ -17,4 +17,6 @@
     "noble-mac": "Timeular/noble-mac#head",
     "xpc-connection": "sandeepmistry/node-xpc-connection#26/head"
   }
+  "author": "Digital Dream Labs",
+  "license": "MIT"
 }

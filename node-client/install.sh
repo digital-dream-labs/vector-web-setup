@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details
+
 npm install .
 
 echo "NODE_CLIENT_PATH=\"\`dirname \\\"\$0\\\"\`\"; node \$NODE_CLIENT_PATH/src/vec-cli.js $@\$@" > vec-cli
