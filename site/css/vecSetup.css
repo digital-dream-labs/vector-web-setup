@@ -1,56 +1,55 @@
 /* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
 
-html, body {
-  color:#FFF;
-  background-color:#000;
+html,
+body {
+  color: #fff;
+  background-color: #000;
   width: 100%;
   height: 100%;
-  font-family: 'Open Sans', sans-serif;
-  font-size:10pt;
-  margin:0px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 10pt;
+  margin: 0px;
 }
 
 body {
-  position:relative;
+  position: relative;
 }
 
-a{
-  color:#4FED94;
+a {
+  color: #4fed94;
 }
 
 a:visited {
-  color:#777;
+  color: #777;
 }
 
-
 .vec-table::-webkit-scrollbar {
-  width:10px;
+  width: 10px;
 }
 
 .vec-table::-webkit-scrollbar-thumb {
-  background:#4FED94;
-  border-radius:10px;
+  background: #4fed94;
+  border-radius: 10px;
 }
 
 .vec-table::-webkit-scrollbar-track {
-  background:#444;
-  border-radius:10px;
+  background: #444;
+  border-radius: 10px;
 }
 
 .vec-ota-table {
   max-height: 70vh;
-  overflow-y:auto;
-  overflow-x:hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-
-select.vec-field{
-  width:240px;
+select.vec-field {
+  width: 240px;
 }
 
 .chrome-img {
-  width:128px;
-  margin:20px;
+  width: 128px;
+  margin: 20px;
 }
 
 .vec-env-container {
@@ -72,18 +71,17 @@ select.vec-field{
   height: auto !important;
 }
 
-
 .vec-env-error-icon {
   height: 80px;
 }
 
-.vec-instruction{
-  display:flex;
-  height:120px;
+.vec-instruction {
+  display: flex;
+  height: 120px;
 }
 
-.vec-instruction > div{
-  line-height:120px;
+.vec-instruction > div {
+  line-height: 120px;
 }
 
 .vec-row {
@@ -93,36 +91,37 @@ select.vec-field{
 }
 
 .vec-card {
-  width:100px;
-  padding:10px;
+  width: 100px;
+  padding: 10px;
 }
 
 .vec-wifi-signal {
-  width:40px;
+  width: 40px;
 }
 
 .vec-ota-type {
-  height:30px;
+  height: 30px;
 }
 
 .vec-icon {
-  width:30px;
+  width: 30px;
   filter: opacity(25%);
   transition: filter 0.5s;
-  margin:5px;
+  margin: 5px;
 }
 
-#iconComplete{
+#iconComplete {
   filter: hue-rotate(50deg);
 }
 
-#wifiScanTable{
+#wifiScanTable {
   max-height: 300px;
   overflow-y: auto;
 }
 
 .vec-icon-done {
-  filter: opacity(100%) brightness(0.8) sepia(1) saturate(10000%) hue-rotate(76deg);
+  filter: opacity(100%) brightness(0.8) sepia(1) saturate(10000%)
+    hue-rotate(76deg);
 }
 
 .vec-icon-active {
@@ -134,34 +133,34 @@ select.vec-field{
 }
 
 .vec-status {
-  position:absolute;
-  top:0px;
+  position: absolute;
+  top: 0px;
   display: flex;
   height: 50px;
 }
 
 .logo-anki {
-  position:absolute;
-  bottom:0px;
-  left:0px;
-  width:100px;
-  padding:10px;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100px;
+  padding: 10px;
 }
 
 .logo-vector {
-  position:absolute;
-  bottom:0px;
-  right:0px;
-  width:150px;
-  padding:4px;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 150px;
+  padding: 4px;
 }
 
 .vec-spinner {
-  height:34px;
-  width:34px;
-  border-radius:100%;
-  background: -webkit-linear-gradient(left top, #000 40%, #4FED94 100%);
-  padding:3px;
+  height: 34px;
+  width: 34px;
+  border-radius: 100%;
+  background: -webkit-linear-gradient(left top, #000 40%, #4fed94 100%);
+  padding: 3px;
   animation-name: vec-spinner-anim;
   animation-duration: 1s;
   animation-iteration-count: infinite;
@@ -169,81 +168,89 @@ select.vec-field{
 }
 
 .vec-spinner-container {
-  height:80px;
-  width:80px;
+  height: 80px;
+  width: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .vec-spinner-inner {
-  background-color:#000;
+  background-color: #000;
   height: 34px;
   width: 34px;
   border-radius: 100%;
 }
 
 @keyframes vec-spinner-anim {
-  from { transform: rotate(0deg); }
-  to {   transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes vec-icon-anim {
-  from { filter:opacity(25%); }
-  to {   filter:opacity(100%); }
+  from {
+    filter: opacity(25%);
+  }
+  to {
+    filter: opacity(100%);
+  }
 }
 
 .vec-container {
-  visibility:hidden;
-  display:none;
-  opacity:0;
-  transition:opacity 500ms;
+  visibility: hidden;
+  display: none;
+  opacity: 0;
+  transition: opacity 500ms;
   overflow-y: auto;
   max-height: 100%;
   padding: 0px 15px;
 }
 
 .vec-container.vec-current {
-  visibility:visible;
-  display:block;
+  visibility: visible;
+  display: block;
 }
 
 .vec-btn {
-  outline:none;
-  color:#FFF;
-  background-color:#000;
-  height:40px;
-  border-radius:20px;
-  min-width:200px;
+  outline: none;
+  color: #fff;
+  background-color: #000;
+  height: 40px;
+  border-radius: 20px;
+  min-width: 200px;
   text-transform: uppercase;
-  border:2px solid #FFF;
-  margin-bottom:3px;
-  transition:background-color 500ms, border 500ms, color 500ms;
-  cursor:pointer;
+  border: 2px solid #fff;
+  margin-bottom: 3px;
+  transition: background-color 500ms, border 500ms, color 500ms;
+  cursor: pointer;
 }
 
 .vec-field {
-  outline:none;
-  color:#FFF;
+  outline: none;
+  color: #fff;
   box-sizing: border-box;
   padding: 0 12px;
-  background-color:#000;
-  height:40px;
-  border-radius:5px;
-  min-width:200px;
+  background-color: #000;
+  height: 40px;
+  border-radius: 5px;
+  min-width: 200px;
   text-transform: uppercase;
-  border:2px solid #FFF;
-  margin-bottom:3px;
-  transition:background-color 500ms, border 500ms, color 500ms;
+  border: 2px solid #fff;
+  margin-bottom: 3px;
+  transition: background-color 500ms, border 500ms, color 500ms;
 }
 
 .vec-field.readonly {
-  border:none !important;
+  border: none !important;
 }
 
 .vec-field[type="button"] {
-  border-radius:20px;
-  cursor:pointer;
+  border-radius: 20px;
+  cursor: pointer;
 }
 
 .vec-field.vec-default {
@@ -251,17 +258,17 @@ select.vec-field{
 }
 
 .vec-field:focus {
-  border:2px solid #4FED94;
-  color:#4FED94; 
+  border: 2px solid #4fed94;
+  color: #4fed94;
 }
 
 .vec-progress-bar {
   width: 100%;
   height: 40px;
   position: relative;
-  margin:10px;
-  left:-10px;
-  min-width:240px;
+  margin: 10px;
+  left: -10px;
+  min-width: 240px;
 }
 
 .vec-progress-bar-fill {
@@ -271,36 +278,36 @@ select.vec-field{
   box-sizing: border-box;
   position: absolute;
   border-radius: 20px;
-  background-color: #4FED94;
+  background-color: #4fed94;
   margin: 5px;
 }
 
 .vec-progress-bar-border {
   width: 100%;
   height: 100%;
-  border: 2px solid #FFF;
+  border: 2px solid #fff;
   box-sizing: border-box;
   border-radius: 20px;
   position: absolute;
 }
 
 .vec-progress-bar-mask {
-  background-color:#000;
-  width:100%;
-  height:40px;
-  right:0;
-  box-sizing:border-box;
+  background-color: #000;
+  width: 100%;
+  height: 40px;
+  right: 0;
+  box-sizing: border-box;
   position: absolute;
-  transition:width 1s;
+  transition: width 1s;
 }
 
 .vec-progress-bar.vec-sm {
   height: 16px;
   position: relative;
-  margin:10px;
-  left:-10px;
-  width:100%;
-  min-width:0px !important;
+  margin: 10px;
+  left: -10px;
+  width: 100%;
+  min-width: 0px !important;
 }
 
 .vec-sm > .vec-progress-bar-fill {
@@ -310,65 +317,66 @@ select.vec-field{
   box-sizing: border-box;
   position: absolute;
   border-radius: 4px;
-  background-color: #4FED94;
+  background-color: #4fed94;
   margin: 4px;
 }
 
 .vec-sm > .vec-progress-bar-border {
   width: 100%;
   height: 100%;
-  border: 2px solid #FFF;
+  border: 2px solid #fff;
   box-sizing: border-box;
   border-radius: 8px;
   position: absolute;
 }
 
 .vec-sm > .vec-progress-bar-mask {
-  background-color:#000;
-  width:100%;
-  height:16px;
-  right:0;
-  box-sizing:border-box;
+  background-color: #000;
+  width: 100%;
+  height: 16px;
+  right: 0;
+  box-sizing: border-box;
   position: absolute;
-  transition:width 1s;
+  transition: width 1s;
 }
 
 .vec-btn:hover {
-  border:2px solid #4FED94;
-  color:#4FED94;
+  border: 2px solid #4fed94;
+  color: #4fed94;
 }
 
 .vec-wifi-row {
-  box-sizing:border-box;
-  height:60px;
-  display:flex;
-  padding:10px;
-  min-width:300px;
-  text-align:center;
-  transition:color 500ms, border 500ms;
-  cursor:pointer;
-  border-top:1px solid rgba(0,0,0,0);
-  border-bottom:1px solid rgba(0,0,0,0);
+  box-sizing: border-box;
+  height: 60px;
+  display: flex;
+  padding: 10px;
+  min-width: 300px;
+  text-align: center;
+  transition: color 500ms, border 500ms;
+  cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0);
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .vec-wifi-ssid {
-  line-height:40px;
+  line-height: 40px;
 }
 
-.vec-wifi-row:hover, .vec-ota-row:hover {
-  color:#4FED94; 
-  border-top:1px solid #4FED94;
-  border-bottom:1px solid #4FED94;
+.vec-wifi-row:hover,
+.vec-ota-row:hover {
+  color: #4fed94;
+  border-top: 1px solid #4fed94;
+  border-bottom: 1px solid #4fed94;
 }
 
 .vec-ota-row {
-  box-sizing:border-box;
+  box-sizing: border-box;
   padding: 5px;
-  min-width:300px;
-  transition:color 500ms, border 500ms;
-  cursor:pointer;
-  border-top:1px solid rgba(0,0,0,0);
-  border-bottom:1px solid rgba(0,0,0,0);
+  min-width: 300px;
+  transition: color 500ms, border 500ms;
+  cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0);
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .vec-ota-name {
@@ -380,163 +388,163 @@ select.vec-field{
 }
 
 .vec-format {
-  text-align:center;
+  text-align: center;
 }
 
 .vec-link {
-  color: #FFF;
+  color: #fff;
   text-decoration: underline;
-  transition:color 500ms;
-  cursor:pointer;
+  transition: color 500ms;
+  cursor: pointer;
 }
 
 div.vec-link {
-  text-align:center;
+  text-align: center;
 }
 
 .vec-shell {
-  width:100%;
-  height:100%;
-  background-color:rgba(2,23,11,.9);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(2, 23, 11, 0.9);
   flex: 0;
 }
 
 .vec-link:hover {
-  color:#4FED94; 
+  color: #4fed94;
 }
 
 .vec-error {
-  color:#F77;
-  margin:10px;
+  color: #f77;
+  margin: 10px;
 }
 
 .vec-hidden {
-  display:none;
+  display: none;
 }
 
 .vec-vector-status {
-  position:absolute;
-  min-width:120px;
-  height:auto;
-  right:10px;
-  top:10px;
+  position: absolute;
+  min-width: 120px;
+  height: auto;
+  right: 10px;
+  top: 10px;
 }
 
 .vec-info-box {
-  min-width:120px;
-  height:auto;
-  border-radius:20px;
-  border:2px solid #4FED94;
-  padding:5px 20px;
-  background-color:#000;
-  margin:3px 0px;
+  min-width: 120px;
+  height: auto;
+  border-radius: 20px;
+  border: 2px solid #4fed94;
+  padding: 5px 20px;
+  background-color: #000;
+  margin: 3px 0px;
 }
 
 .vec-status-icon {
-  height:11px;
-  margin-right:4px;
+  height: 11px;
+  margin-right: 4px;
 }
 
 .vec-status-none {
-  width:0px;
-  display:inline-block;
+  width: 0px;
+  display: inline-block;
 }
 
 .vec-info-title {
-  color:#4FED94;
-  text-align:center;
-  margin-bottom:5px;
-  font-weight:700;
+  color: #4fed94;
+  text-align: center;
+  margin-bottom: 5px;
+  font-weight: 700;
 }
 
 .vec-eyecon {
-  height:16px;
+  height: 16px;
 }
 
 .vec-password-block {
-  position:relative;
+  position: relative;
   display: inline-block;
 }
 
 .vec-eye-toggle {
-  position:absolute;
+  position: absolute;
   top: 12px;
   right: 10px;
 }
 
 .vec-link {
-  cursor:pointer;
-  transition:color 0.5s;
+  cursor: pointer;
+  transition: color 0.5s;
 }
 
 .vec-link:hover {
-  color:#4FED94;
+  color: #4fed94;
 }
 
 .vec-panel {
-  position:relative;
-  flex:0 0 0%;
-  width:0px;
-  transition:flex .2s, width .2s;
-  overflow:hidden;
+  position: relative;
+  flex: 0 0 0%;
+  width: 0px;
+  transition: flex 0.2s, width 0.2s;
+  overflow: hidden;
 }
 
 .vec-panel-ui {
   align-items: center;
   justify-content: center;
-  display:flex;
+  display: flex;
 }
 
 .vec-panel-container {
-  display:flex;
-  width:100%;
-  height:100%;
-  overflow:hidden;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .vec-panel-footer {
-  bottom:10px;
-  position:absolute;
-  font-size:8pt;
+  bottom: 10px;
+  position: absolute;
+  font-size: 8pt;
 }
 
 .vec-ui-footer {
-  display:flex;
-  position:absolute;
-  left:0px;
-  right:0px;
-  bottom:0px;
-  height:50px;
+  display: flex;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: 50px;
 }
 
 .vec-ui-footer-side {
-  flex:0 1 auto;
-  display:flex;
+  flex: 0 1 auto;
+  display: flex;
 }
 
 .vec-ui-footer-side > img {
-  width:61px;
-  padding:10px;
+  width: 61px;
+  padding: 10px;
   justify-content: center;
-  align-items:center;
+  align-items: center;
 }
 
 .vec-ui-footer-middle {
-  flex:1 0 auto;
-  display:flex;
+  flex: 1 0 auto;
+  display: flex;
   justify-content: center;
-  align-items:center;
-  text-align:center;
-  color:#999;
-  font-size:8pt;
+  align-items: center;
+  text-align: center;
+  color: #999;
+  font-size: 8pt;
 }
 
 .vec-ui-footer-middle * a {
-  color:#999;
+  color: #999;
 }
 
 .vec-ui-footer-middle:visited * a {
-  color:#999;
+  color: #999;
 }
 
 .vec-action {

@@ -1,16 +1,16 @@
 /* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
 
-var { VectorBluetooth } = require('./vectorBluetooth.js');
-var { RtsCliUtil } = require('./rtsCliUtil.js');
-var { IntBuffer } = require('./clad.js');
-var { RtsV2Handler } = require('./rtsV2Handler.js');
-var { RtsV3Handler } = require('./rtsV3Handler.js');
-var { RtsV4Handler } = require('./rtsV4Handler.js');
-var { RtsV5Handler } = require('./rtsV5Handler.js');
-var { RtsV6Handler } = require('./rtsV6Handler.js');
-var { Sessions } = require('./sessions.js');
-var { Settings } = require('./settings.js');
-var { TYPE } = require('./stack.js');
+var { VectorBluetooth } = require("./vectorBluetooth.js");
+var { RtsCliUtil } = require("./rtsCliUtil.js");
+var { IntBuffer } = require("./clad.js");
+var { RtsV2Handler } = require("./rtsV2Handler.js");
+var { RtsV3Handler } = require("./rtsV3Handler.js");
+var { RtsV4Handler } = require("./rtsV4Handler.js");
+var { RtsV5Handler } = require("./rtsV5Handler.js");
+var { RtsV6Handler } = require("./rtsV6Handler.js");
+var { Sessions } = require("./sessions.js");
+var { Settings } = require("./settings.js");
+var { TYPE } = require("./stack.js");
 
 let rtsHandler = null;
 let vecBle = new VectorBluetooth();
@@ -27,6 +27,7 @@ let _settings = null;
 let _stack = null;
 let _otaEndpoint = null;
 let _serverIp = null;
+let _serverPort = null;
 let urlParams = {};
 let _statusInterval = null;
 let _enableAutoFlow = true;
@@ -37,16 +38,16 @@ setView(_sessions.getViewMode(), false);
 
 window.sodium = {
   onload: function (sodium) {
-    //   
+    //
     _sodium = sodium;
-  }
+  },
 };
 
 // set build type
 function parseParams() {
-  let params = (new URL(window.location.href)).searchParams;
+  let params = new URL(window.location.href).searchParams;
   let buildType = params.get("build");
-  switch(buildType) {
+  switch (buildType) {
     case "dev":
     case "beta":
     case "prod":
@@ -60,11 +61,11 @@ function parseParams() {
   let wifiSsid = params.get("wifiSsid");
   let wifiPassword = params.get("wifiPassword");
 
-  if(wifiSsid != null) {
+  if (wifiSsid != null) {
     _wifiCredentials = {
-      "ssid":wifiSsid,
-      "pw":wifiPassword,
-      "auth":6
+      ssid: wifiSsid,
+      pw: wifiPassword,
+      auth: 6,
     };
   }
 }
@@ -73,39 +74,44 @@ function parseParams() {
 function setupStacks(stacks) {
   var btns = "";
   var selectedStack;
-  stacks.map((stack) => btns += generateStackRow(stack))
+  stacks.map((stack) => (btns += generateStackRow(stack)));
 
-  $("#envOptions").html(btns)
-  
-  $(".vec-env-select-btn").click(function() {
-    var selectedStack = $("#envOptions").val()
+  $("#envOptions").html(btns);
+
+  $(".vec-env-select-btn").click(function () {
+    var selectedStack = $("#envOptions").val();
     _stack = _settings.getStack(selectedStack);
-    
+
     configurePtrem();
-    
+
     $("#boxVectorEnv").removeClass("vec-hidden");
     $("#vecEnv").html(selectedStack);
 
     toggleIcon("iconEnv", true);
 
     setPhase("containerDiscover");
-  })
+  });
 }
 
 function generateStackRow(name) {
-  return "<option value=\""+ name +"\">" + 
-    name.charAt(0).toUpperCase() + name.slice(1) + 
+  return (
+    '<option value="' +
+    name +
+    '">' +
+    name.charAt(0).toUpperCase() +
+    name.slice(1) +
     "</option>"
+  );
 }
 
 function configurePtrem() {
   // load env
   let env = _sessions.getEnv();
-  if(env != null) {
+  if (env != null) {
     pterm_env = env;
   }
 
-  pterm_on('env', function() {
+  pterm_on("env", function () {
     _sessions.setEnv(pterm_env);
     _sessions.save();
   });
@@ -114,8 +120,8 @@ function configurePtrem() {
   pterm_set("OTA_URL", urlParams["otaUrl"]);
 
   let lastVector = _sessions.getLastVector();
-  if(lastVector) {
-    pterm_set('LAST', lastVector);
+  if (lastVector) {
+    pterm_set("LAST", lastVector);
   }
 
   pterm_insert_history("ble-connect '" + lastVector + "'");
@@ -123,7 +129,7 @@ function configurePtrem() {
 
 //**************** OTA *******************
 function setupOTAFiles() {
-  if(_version != 2) {
+  if (_version != 2) {
     toggleIcon("iconOta", true);
     setPhase("containerAccount");
     return;
@@ -131,17 +137,17 @@ function setupOTAFiles() {
 
   if (_stack === null) {
     return;
-  }  
+  }
 
   getOtasPresent(_stack.name).then((data) => {
     if (!Array.isArray(data.message)) {
       console.log("No otas found for env");
-      data.message = []
+      data.message = [];
     }
 
     var localOtas = data.message;
-    var localUrlPrefix = `http://${_serverIp}:8000/static/firmware/${_stack.name}/`;
-    var otaUrls = []
+    var localUrlPrefix = `http://${_serverIp}:${_serverPort}/static/firmware/${_stack.name}/`;
+    var otaUrls = [];
 
     localOtas.map((endpoint) => {
       var obj = parseURL(localUrlPrefix + endpoint);
@@ -150,42 +156,41 @@ function setupOTAFiles() {
     });
 
     setPhase("containerOta");
-  
+
     // No URL present
     if (otaUrls.length == 0) {
       $("#containerOtaSelection").addClass("vec-hidden");
       $("#containerOtaNoImage").removeClass("vec-hidden");
-    } 
+    }
     // One URL present
     else if (otaUrls.length == 1) {
       $("#containerOtaSelection").addClass("vec-hidden");
       $("#otaUpdate").removeClass("vec-hidden");
-  
       _otaEndpoint = otaUrls[0].href;
       doOta();
-    } 
+    }
     // Multiple URL's presents
     else {
       var urlViews = "";
-      otaUrls.map((url, index) => urlViews += generateOtaFileRow(index, url));
+      otaUrls.map((url, index) => (urlViews += generateOtaFileRow(index, url)));
       $("#otaSelection").html(urlViews);
-  
-      $(".vec-ota-row").click(function() {
+
+      $(".vec-ota-row").click(function () {
         $("#containerOtaSelection").addClass("vec-hidden");
         $("#otaUpdate").removeClass("vec-hidden");
-  
+
         var selectedUrl = $(this).data().value;
         _otaEndpoint = otaUrls[selectedUrl].href;
-        
+
         pterm_set("OTA_LKG", _otaEndpoint);
-        // Previous version allowed webclient to be configured using 
+        // Previous version allowed webclient to be configured using
         // url params. OTA_URL was used to send that to pterm
         pterm_set("OTA_URL", _otaEndpoint);
-  
-        doOta()
-      })
+
+        doOta();
+      });
     }
-  })
+  });
 }
 
 function parseURL(url) {
@@ -196,17 +201,19 @@ function parseURL(url) {
 
 function getOtasPresent(env) {
   return new Promise((resolve, reject) => {
-      $.ajax({
-      type: 'POST',
-      url: "http://localhost:8000/firmware",
+    $.ajax({
+      type: "POST",
+      url: `http://localhost:${_serverPort}/firmware`,
       data: {
-        env: env
-      }
-    }).done(function(data) {
-      resolve(data);
-    }).fail(function(data) {
-      reject(data);
-    });
+        env: env,
+      },
+    })
+      .done(function (data) {
+        resolve(data);
+      })
+      .fail(function (data) {
+        reject(data);
+      });
   });
 }
 
@@ -219,25 +226,19 @@ function generateOtaFileRow(value, urlObj) {
     img = "/static/images/fontawesome/sd-card-solid.svg";
   }
 
-  return "<div " + 
-            "data-value=\"" + value + "\" " +
-            "class=\"row vec-ota-row\">" + 
-            "<div class=\"col-md-2\">" +
-              "<img class=\"vec-ota-type\" src=\"" + img + "\" />" +
-            "</div>" +
-            "<div class=\"vec-ota-name col-md-10\">" + 
-              "<div class=\"vec-ota-name col-md-12\">" + 
-              urlObj.filename +
-              "</div>" +
-              "<div class=\"vec-ota-host col-md-12\">" + 
-              urlObj.hostname +
-              "</div>" +
-            "</div>" +
-         "</div>";
+  return (
+    `<div 'data-value="${value}" class="row vec-ota-row">` +
+    `<div class="col-md-2"><img class="vec-ota-type" src="${img}" /> </div>` +
+    `<div class="vec-ota-name col-md-10">` +
+    `<div class="vec-ota-name col-md-12">${urlObj.filename}</div>` +
+    `<div class="vec-ota-host col-md-12">${urlObj.hostname}</div>` +
+    `</div>` +
+    `</div>`
+  );
 }
 
 function getOtaUrl() {
-  if("otaUrl" in urlParams) {
+  if ("otaUrl" in urlParams) {
     return urlParams["otaUrl"];
   } else {
     return _otaEndpoint;
@@ -247,22 +248,18 @@ function getOtaUrl() {
 //**************** Wifi *******************
 
 function connectToWifi(ssid, pw, auth) {
-  rtsHandler.doWifiConnect(
-    ssid, 
-    pw, 
-    auth, 
-    15).then(function(msg) {
-      if(msg.value.wifiState == 2 || msg.value.wifiState == 1) {
-        $("#wifiConnectErrorLabel").addClass("vec-hidden");
-        toggleIcon("iconWifi", true);
-        setupOTAFiles()
-      } else {
-        // wifi failed
-        $("#wifiConnectErrorLabel").removeClass("vec-hidden");
-        scanForWifi();
-        _wifiCredentials = null;
-      }
-    });
+  rtsHandler.doWifiConnect(ssid, pw, auth, 15).then(function (msg) {
+    if (msg.value.wifiState == 2 || msg.value.wifiState == 1) {
+      $("#wifiConnectErrorLabel").addClass("vec-hidden");
+      toggleIcon("iconWifi", true);
+      setupOTAFiles();
+    } else {
+      // wifi failed
+      $("#wifiConnectErrorLabel").removeClass("vec-hidden");
+      scanForWifi();
+      _wifiCredentials = null;
+    }
+  });
 }
 
 function toggleIcon(icon, on) {
@@ -276,16 +273,16 @@ function setPhase(phase) {
 
   // update icon
   let icon = $("#" + phase).attr("icon");
-  if(icon != null && icon != "") {
+  if (icon != null && icon != "") {
     $(".vec-icon").removeClass("vec-icon-active");
     $("#" + icon).addClass("vec-icon-active");
-  } 
+  }
 
   $(".vec-container.vec-current").css("opacity", 0);
   $(".vec-container.vec-current").removeClass("vec-current");
   $("#" + phase).addClass("vec-current");
   $("#" + phase).css("opacity", 1);
-  
+
   if (phase == "containerAccount") {
     $("#newAccount").css("opacity", 0);
     $("#newAccount").css("display", "none");
@@ -293,35 +290,48 @@ function setPhase(phase) {
 }
 
 function setOtaProgress(percent) {
-  let maskWidth = (1-percent)*100;
-  $("#progressBarOta").children(".vec-progress-bar-mask").css("width", maskWidth + "%");
+  let maskWidth = (1 - percent) * 100;
+  $("#progressBarOta")
+    .children(".vec-progress-bar-mask")
+    .css("width", maskWidth + "%");
 }
 
 function setLogProgress(percent) {
-  let maskWidth = (1-percent)*100;
-  $("#progressBarLogs").children(".vec-progress-bar-mask").css("width", maskWidth + "%");
+  let maskWidth = (1 - percent) * 100;
+  $("#progressBarLogs")
+    .children(".vec-progress-bar-mask")
+    .css("width", maskWidth + "%");
 }
 
 function generateWifiRow(hex, auth, strength) {
   let ssid = RtsCliUtil.convertHexToStr(hex);
   let n = "1";
-  if(strength > 45) {
+  if (strength > 45) {
     n = "2";
   }
-  if(strength > 65) {
+  if (strength > 65) {
     n = "3";
   }
   let img = "/static/images/settings_icon_wifilife_" + n + "bars_mini.svg";
-  return "<div class=\"vec-wifi-row\" authType=\"" + auth + "\" hexId=\"" + hex + "\"><img class=\"vec-wifi-signal\" src=" + img + "><div class=\"vec-wifi-ssid\">" + ssid + "</div></div>";
+  return (
+    `<div class="vec-wifi-row" authType="${auth}" hexId="${hex}">` +
+    `<img class="vec-wifi-signal" src="${img}" />` +
+    `<div class="vec-wifi-ssid">${ssid}</div>` +
+    "</div>"
+  );
 }
 
 function displayWifiNetworks(m) {
   let wifiHtml = "";
 
-  for(let i = 0; i < m.scanResult.length; i++) {
-    if(m.scanResult[i].wifiSsidHex == "hidden") continue;
+  for (let i = 0; i < m.scanResult.length; i++) {
+    if (m.scanResult[i].wifiSsidHex == "hidden") continue;
 
-    wifiHtml += generateWifiRow(m.scanResult[i].wifiSsidHex, m.scanResult[i].authType, m.scanResult[i].signalStrength);
+    wifiHtml += generateWifiRow(
+      m.scanResult[i].wifiSsidHex,
+      m.scanResult[i].authType,
+      m.scanResult[i].signalStrength
+    );
   }
 
   $("#wifiScanTable").html(wifiHtml);
@@ -329,7 +339,7 @@ function displayWifiNetworks(m) {
 
 function handleDisconnected() {
   cleanRtsHandler();
-  pterm_changeprompt('', null);
+  pterm_changeprompt("", null);
   clearInterval(_statusInterval);
   $("#boxVectorStatus").addClass("vec-hidden");
   toggleIcon("iconBle", false);
@@ -337,14 +347,17 @@ function handleDisconnected() {
 }
 
 function doOta() {
-  if(_version == 2) {
-    rtsHandler.doOtaStart(getOtaUrl()).then(function(msg){
-      console.log("ota success");
-    }, function(msg){
-      console.log(msg);
-      $("#otaErrorLabel").removeClass("vec-hidden");
-      $("#btnTryAgain").removeClass("vec-hidden");
-    });
+  if (_version == 2) {
+    rtsHandler.doOtaStart(getOtaUrl()).then(
+      function (msg) {
+        console.log("ota success");
+      },
+      function (msg) {
+        console.log(msg);
+        $("#otaErrorLabel").removeClass("vec-hidden");
+        $("#btnTryAgain").removeClass("vec-hidden");
+      }
+    );
   } else {
     toggleIcon("iconOta", true);
     setPhase("containerAccount");
@@ -355,57 +368,57 @@ function setView(mode, animate) {
   _sessions.setViewMode(mode);
   _sessions.save();
 
-  if(!animate) {
+  if (!animate) {
     $(".vec-panel").addClass("pterm-no-transition");
   }
 
-  if(mode == 1) {
+  if (mode == 1) {
     $(".vec-panel-ui").css("flex", "1 0 50%");
     $(".vec-shell").css("flex", "0");
-  }
-  else if(mode == 2) {
+  } else if (mode == 2) {
     $(".vec-panel-ui").css("flex", "1 0 50%");
     $(".vec-shell").css("flex", "1 0 50%");
-  }
-  else if(mode == 3) {
+  } else if (mode == 3) {
     $(".vec-panel-ui").css("flex", "0");
     $(".vec-shell").css("flex", "1 0 50%");
   }
 
   $(".vec-panel")[0].offsetHeight;
 
-  if(!animate) {
+  if (!animate) {
     $(".vec-panel").removeClass("pterm-no-transition");
   }
 }
 
-$(document).ready(function() {
-  $(document).keydown(function(event) {
-    if(event.altKey) {
-      if(event.keyCode == 49) {
+$(document).ready(function () {
+  $(document).keydown(function (event) {
+    if (event.altKey) {
+      if (event.keyCode == 49) {
         setView(1, true);
-      }
-      else if(event.keyCode == 50) {
+      } else if (event.keyCode == 50) {
         setView(2, true);
-      }
-      else if(event.keyCode == 51) {
+      } else if (event.keyCode == 51) {
         setView(3, true);
       }
     }
   });
 
-  console.log(" __      ________ _____ _______ ____  _____  \n" +
-    " \\ \\    / /  ____/ ____|__   __/ __ \\|  __ \\ \n" +
-    "  \\ \\  / /| |__ | |       | | | |  | | |__) |\n" +
-    "   \\ \\/ / |  __|| |       | | | |  | |  _  / \n" +
-    "    \\  /  | |___| |____   | | | |__| | | \\ \\ \n"  +
-    "     \\/   |______\\_____|  |_|  \\____/|_|  \\_\\");
+  console.log(
+    " __      ________ _____ _______ ____  _____  \n" +
+      " \\ \\    / /  ____/ ____|__   __/ __ \\|  __ \\ \n" +
+      "  \\ \\  / /| |__ | |       | | | |  | | |__) |\n" +
+      "   \\ \\/ / |  __|| |       | | | |  | |  _  / \n" +
+      "    \\  /  | |___| |____   | | | |__| | | \\ \\ \n" +
+      "     \\/   |______\\_____|  |_|  \\____/|_|  \\_\\"
+  );
 
-  console.log("\nURL parameters:\n" +
-    "\t    wifiSsid = WIFI_SSID\n" + 
-    "\twifiPassword = WIFI_PASSWORD\n\n");
+  console.log(
+    "\nURL parameters:\n" +
+      "\t    wifiSsid = WIFI_SSID\n" +
+      "\twifiPassword = WIFI_PASSWORD\n\n"
+  );
 
-  if(!navigator.bluetooth) {
+  if (!navigator.bluetooth) {
     setPhase("containerIncompatible");
     return;
   }
@@ -414,31 +427,32 @@ $(document).ready(function() {
   parseParams();
 
   // set up env selection
-  $.getJSON("/static/data/settings.json", function(json) {
+  $.getJSON("/static/data/settings.json", function (json) {
     try {
       _settings = new Settings(json);
 
-      setPhase("containerEnvironment")
+      setPhase("containerEnvironment");
       // setPhase("containerAccount");
 
-      setupStacks(_settings.getStackNames())
+      setupStacks(_settings.getStackNames());
     } catch (error) {
       console.error(error);
       setPhase("containerEnvironmentError");
     }
-  }).fail(function() {
+  }).fail(function () {
     setPhase("containerEnvironmentError");
-  })
-  
-  _serverIp = $("#serverIp").text()
+  });
+
+  _serverIp = $("#serverIp").text();
+  _serverPort = $("#serverPort").text();
 
   // listen to ble messages
   vecBle.onReceive(handleRtsHandshake);
   vecBle.onDisconnected(handleDisconnected);
-  vecBle.onCancelSelect(function() {
+  vecBle.onCancelSelect(function () {
     setPhase("containerDiscover");
-    
-    if(_cmdPending) {
+
+    if (_cmdPending) {
       _cmdPending = false;
       newLine();
     }
@@ -446,9 +460,9 @@ $(document).ready(function() {
 
   $("#containerEnvironment").css("opacity", 1);
 
-  $("#wifiScanTable").on("click", ".vec-wifi-row", function() {
-    for(let i = 0; i < scannedNetworks.length; i++) {
-      if(scannedNetworks[i].wifiSsidHex == $(this).attr('hexId')) {
+  $("#wifiScanTable").on("click", ".vec-wifi-row", function () {
+    for (let i = 0; i < scannedNetworks.length; i++) {
+      if (scannedNetworks[i].wifiSsidHex == $(this).attr("hexId")) {
         selectedNetwork = scannedNetworks[i];
       }
     }
@@ -459,47 +473,57 @@ $(document).ready(function() {
     setPhase("containerWifiConfig");
   });
 
-  $('.vec-container').bind("keypress", function (e) {
-    if(e.which == 13) {
+  $(".vec-container").bind("keypress", function (e) {
+    if (e.which == 13) {
       let buttons = $(this).children('[type="button"]');
-      buttons.first().trigger('click');
-      return false;  
+      buttons.first().trigger("click");
+      return false;
     }
-  }); 
+  });
 
-  pterm_on('cmd', function(args) {
-    if(rtsHandler != null) {
+  pterm_on("cmd", function (args) {
+    if (rtsHandler != null) {
       pterm_handled = rtsHandler.handleCli(args);
-    }
-    else {
+    } else {
       pterm_handled = true;
 
-      if(args[0] == "help") {
+      if (args[0] == "help") {
         let helpArgs = {
-          'ble-connect':{  args:0, 
-                      des:'Scan and connect to a Vector',
-                      help:'ble-connect [VECTOR_NAME]' },
-          'ble-clear':{  args:0, 
-                      des:'Clear stored session data.',
-                      help:'ble-clear' },
-          'echo':{  args:1, 
-                      des:'Echo text to terminal.',
-                      help:'echo $LAST' },
-          'export':{  args:1, 
-                      des:'Save env variables.',
-                      help:'export MY_VAR=0 OTHER_VAR=40' },
-          'printenv':{  args:0, 
-                      des:'Print environment variables.',
-                      help:'printenv' },
-          'unset':{   args:1, 
-                      des:'Unset env variables',
-                      help:'unset MY_VAR' }
-          };
+          "ble-connect": {
+            args: 0,
+            des: "Scan and connect to a Vector",
+            help: "ble-connect [VECTOR_NAME]",
+          },
+          "ble-clear": {
+            args: 0,
+            des: "Clear stored session data.",
+            help: "ble-clear",
+          },
+          echo: {
+            args: 1,
+            des: "Echo text to terminal.",
+            help: "echo $LAST",
+          },
+          export: {
+            args: 1,
+            des: "Save env variables.",
+            help: "export MY_VAR=0 OTHER_VAR=40",
+          },
+          printenv: {
+            args: 0,
+            des: "Print environment variables.",
+            help: "printenv",
+          },
+          unset: {
+            args: 1,
+            des: "Unset env variables",
+            help: "unset MY_VAR",
+          },
+        };
         pterm_print(RtsCliUtil.printHelp(helpArgs));
-      }
-      else if(args[0] == "ble-connect") {
-        if(args[1]) {
-          if(args[1].length == 4) {
+      } else if (args[0] == "ble-connect") {
+        if (args[1]) {
+          if (args[1].length == 4) {
             _filter = "Vector " + args[1];
           } else {
             _filter = args[1];
@@ -510,8 +534,7 @@ $(document).ready(function() {
         $("#btnDiscoverVector").click();
         _cmdPending = true;
         pterm_handled = false;
-      }
-      else if(args[0] == "ble-clear") {
+      } else if (args[0] == "ble-clear") {
         _sessions.clearSessions();
         _sessions.save();
       }
@@ -520,8 +543,8 @@ $(document).ready(function() {
 });
 
 let handleRtsHandshake = {};
-handleRtsHandshake.receive = function(data) {
-  if(data[0] == 1 && data.length == 5) {
+handleRtsHandshake.receive = function (data) {
+  if (data[0] == 1 && data.length == 5) {
     // This message is a handshake from Vector
     let version = IntBuffer.BufferToUInt32(data.slice(1));
     HandleHandshake(version);
@@ -532,73 +555,77 @@ handleRtsHandshake.receive = function(data) {
 
 function doCloudLogin(inputUsername, inputPassword) {
   let self = this;
-  let p = new Promise(function(resolve, reject) {
+  let p = new Promise(function (resolve, reject) {
     $.ajax({
-      type: 'POST',
+      type: "POST",
       url: _stack.getAccountEndpoints() + "/1/sessions",
       headers: {
-        "Anki-App-Key": _stack.getApiKeys()
+        "Anki-App-Key": _stack.getApiKeys(),
       },
       data: {
         username: inputUsername,
-        password: inputPassword
-      }
-    }).done(function(data) {
-      resolve(data);
-    }).fail(function(data) {
-      reject(data);
-    });
+        password: inputPassword,
+      },
+    })
+      .done(function (data) {
+        resolve(data);
+      })
+      .fail(function (data) {
+        reject(data);
+      });
   });
 
   return p;
 }
-
 
 function doPasswordReset(inputEmail) {
-  let p = new Promise(function(resolve, reject) {
+  let p = new Promise(function (resolve, reject) {
     $.ajax({
-      type: 'POST',
+      type: "POST",
       url: _stack.getAccountEndpoints() + "/1/reset_user_password",
       headers: {
-        "Anki-App-Key": _stack.getApiKeys()
+        "Anki-App-Key": _stack.getApiKeys(),
       },
       data: {
-        email: inputEmail
-      }
-    }).done(function(data) {
-      resolve(data);
-    }).fail(function(data) {
-      reject(data);
-    });
+        email: inputEmail,
+      },
+    })
+      .done(function (data) {
+        resolve(data);
+      })
+      .fail(function (data) {
+        reject(data);
+      });
   });
 
   return p;
 }
 
-
 function createAccount(inputEmail, inputPassword, inputDob) {
-  let p = new Promise(function(resolve, reject) {
+  let p = new Promise(function (resolve, reject) {
     $.ajax({
-      type: 'POST',
+      type: "POST",
       url: _stack.getAccountEndpoints() + "/1/users",
       headers: {
-        "Anki-App-Key": _stack.getApiKeys()
+        "Anki-App-Key": _stack.getApiKeys(),
       },
-      dataType: 'json',
-      contentType: 'application/json',
+      dataType: "json",
+      contentType: "application/json",
       data: JSON.stringify({
         email: inputEmail,
         password: inputPassword,
         dob: inputDob,
         created_by_app_name: "vector-web-setup",
         created_by_app_platform: "web",
-        created_by_app_version: "1.0.0"
+        created_by_app_version: "1.0.0",
+      }),
+    })
+      .done(function (data) {
+        resolve(data);
       })
-    }).done(function(data) {
-      resolve(data);
-    }).fail(function(data) {
-      reject(data);
-    });
+      .fail(function (data) {
+        reject(data);
+      });
   });
 
   return p;
@@ -610,7 +637,7 @@ function GenerateHandshakeMessage(version) {
 }
 
 function scanForWifi() {
-  rtsHandler.doWifiScan().then(function(m) {
+  rtsHandler.doWifiScan().then(function (m) {
     scannedNetworks = m.value;
     displayWifiNetworks(m.value);
     setPhase("containerWifi");
@@ -619,7 +646,7 @@ function scanForWifi() {
 
 function updateStatusBox(m) {
   $("#boxVectorStatus").removeClass("vec-hidden");
-  if(m.value.wifiState == 1 || m.value.wifiState == 2) {
+  if (m.value.wifiState == 1 || m.value.wifiState == 2) {
     $("#vecInfoWifi").removeClass("vec-hidden");
     $("#vecStatusSsid").html(RtsCliUtil.convertHexToStr(m.value.wifiSsidHex));
   } else {
@@ -629,7 +656,12 @@ function updateStatusBox(m) {
   $("#vecInfoBuild").html(m.value.version.split("-")[0]);
   $("#vecStatusTitle").html(vecBle.bleName);
 
-  if(_version == 2 || _version == 3 || (!m.value.hasOwner || m.value.isCloudAuthed)) {
+  if (
+    _version == 2 ||
+    _version == 3 ||
+    !m.value.hasOwner ||
+    m.value.isCloudAuthed
+  ) {
     // RtsV2 or Cloud authorized
 
     // Save session
@@ -655,7 +687,7 @@ function enableLogPanel() {
 }
 
 function cleanRtsHandler() {
-  if(rtsHandler != null) {
+  if (rtsHandler != null) {
     rtsHandler.cleanup();
     rtsHandler = null;
   }
@@ -664,8 +696,8 @@ function cleanRtsHandler() {
 function HandleHandshake(version) {
   cleanRtsHandler();
   toggleIcon("iconBle", true);
-  
-  switch(version) {
+
+  switch (version) {
     case 6:
       // RTSv6
       rtsHandler = new RtsV6Handler(vecBle, _sodium, _sessions);
@@ -693,11 +725,11 @@ function HandleHandshake(version) {
 
   _version = version;
 
-  rtsHandler.onReadyForPin(function() {
+  rtsHandler.onReadyForPin(function () {
     setPhase("containerEnterPin");
 
-    if(_cmdPending) {
-      pterm_read("Enter pin:").then(function(args) {
+    if (_cmdPending) {
+      pterm_read("Enter pin:").then(function (args) {
         _enableAutoFlow = false;
         _cmdPending = false;
         rtsHandler.enterPin(args[0]);
@@ -706,67 +738,71 @@ function HandleHandshake(version) {
     }
   });
 
-  rtsHandler.onEncryptedConnection(function() {
+  rtsHandler.onEncryptedConnection(function () {
     $("#discoverFirstTime").addClass("vec-hidden");
     $("#discoverReconnect").removeClass("vec-hidden");
 
-    if(_statusInterval != null) {
+    if (_statusInterval != null) {
       clearInterval(_statusInterval);
     }
 
-    if(_cmdPending) {
+    if (_cmdPending) {
       _cmdPending = false;
       newLine();
     }
-    
-    rtsHandler.doStatus()
-    .then(function(m) {
+
+    rtsHandler.doStatus().then(function (m) {
       updateStatusBox(m);
 
-      if(!_enableAutoFlow) {
+      if (!_enableAutoFlow) {
         // early out of auto update flow
         $(".vec-panel-ui").css("flex", "0");
-        $(".vec-shell").css("flex", "1 0 50%"); 
+        $(".vec-shell").css("flex", "1 0 50%");
         return;
       }
 
-      if(m.value.wifiState == 1 || m.value.wifiState == 2) {
+      if (m.value.wifiState == 1 || m.value.wifiState == 2) {
         toggleIcon("iconWifi", true);
         // skip wifi scan
-        setupOTAFiles()
-      } 
-      else if(_wifiCredentials != null) {
+        setupOTAFiles();
+      } else if (_wifiCredentials != null) {
         // try to reconnect with stored credentials
-        rtsHandler.doWifiScan().then(function(m) {
-          connectToWifi(_wifiCredentials.ssid, _wifiCredentials.pw, _wifiCredentials.auth);
+        rtsHandler.doWifiScan().then(function (m) {
+          connectToWifi(
+            _wifiCredentials.ssid,
+            _wifiCredentials.pw,
+            _wifiCredentials.auth
+          );
         });
-      }
-      else {
+      } else {
         scanForWifi();
       }
     });
 
     _sessions.setLastVector(vecBle.bleName);
     _sessions.save();
-    pterm_set('LAST', vecBle.bleName);
+    pterm_set("LAST", vecBle.bleName);
 
-    pterm_changeprompt('[v' + _version + '] ' + vecBle.bleName.split(' ')[1], "blue");
+    pterm_changeprompt(
+      "[v" + _version + "] " + vecBle.bleName.split(" ")[1],
+      "blue"
+    );
   });
 
-  if(rtsHandler.onCloudAuthorized) {
-    rtsHandler.onCloudAuthorized(function(value) {
-      if(value.success) {
+  if (rtsHandler.onCloudAuthorized) {
+    rtsHandler.onCloudAuthorized(function (value) {
+      if (value.success) {
         // save session
         saveSession();
       }
     });
   }
 
-  rtsHandler.onOtaProgress(function(value) {
-    if(value.status == 2) {
-      let progress = Number(value.current)/Number(value.expected);
-      setOtaProgress(progress); 
-    } else if(value.status == 3) {
+  rtsHandler.onOtaProgress(function (value) {
+    if (value.status == 2) {
+      let progress = Number(value.current) / Number(value.expected);
+      setOtaProgress(progress);
+    } else if (value.status == 3) {
       // handle OTA complete
       toggleIcon("iconOta", true);
       setPhase("containerDiscover");
@@ -774,78 +810,78 @@ function HandleHandshake(version) {
       // todo: handle failure
     }
   });
-  
-  rtsHandler.onLogProgress(function(value) {
-    let progress = Number(value.packetNumber)/Number(value.packetTotal);
+
+  rtsHandler.onLogProgress(function (value) {
+    let progress = Number(value.packetNumber) / Number(value.packetTotal);
     setLogProgress(progress);
   });
 
-  rtsHandler.onCliResponse(function(output) {
+  rtsHandler.onCliResponse(function (output) {
     pterm_print(output);
     newLine();
   });
 
-  rtsHandler.onPrint(function(output) {
+  rtsHandler.onPrint(function (output) {
     pterm_print(output);
   });
 
-  rtsHandler.onCommandDone(function() {
+  rtsHandler.onCommandDone(function () {
     newLine();
   });
 
-  rtsHandler.onNewProgressBar(function() {
+  rtsHandler.onNewProgressBar(function () {
     pterm_new_progress_bar();
   });
 
-  rtsHandler.onUpdateProgressBar(function(value, total) {
+  rtsHandler.onUpdateProgressBar(function (value, total) {
     pterm_set_progress_bar(value, total);
   });
 
-  rtsHandler.onLogsDownloaded(function(name, logFile) {
-    var file = new Blob(logFile, { type: ".tar.gz" });   
+  rtsHandler.onLogsDownloaded(function (name, logFile) {
+    var file = new Blob(logFile, { type: ".tar.gz" });
     var a = document.createElement("a"),
-    url = URL.createObjectURL(file);
+      url = URL.createObjectURL(file);
     a.href = url;
     a.download = name;
     document.body.appendChild(a);
     a.click();
-    setTimeout(function() {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);  
-    }, 0); 
+    setTimeout(function () {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 0);
   });
 
   vecBle.send(GenerateHandshakeMessage(version));
 }
 
-$("#btnTryAgain").click(function() {
+$("#btnTryAgain").click(function () {
   $("#btnTryAgain").addClass("vec-hidden");
   $("#otaErrorLabel").addClass("vec-hidden");
   doOta();
 });
 
-$("#btnDiscoverVector").click(function() {
+$("#btnDiscoverVector").click(function () {
   setPhase("containerLoading");
   vecBle.tryConnect(_filter);
   _filter = null;
 });
 
-$("#btnEnterPin").click(function() {
+$("#btnEnterPin").click(function () {
   _enableAutoFlow = $("#checkboxEnableAutoFlow").is(":checked");
   rtsHandler.enterPin($("#txtPin").val());
   setPhase("containerLoading");
 });
 
-$("#btnConnectWifi").click(function() {
+$("#btnConnectWifi").click(function () {
   let auth = 6;
-  if(selectedNetwork != null) {
+  if (selectedNetwork != null) {
     auth = selectedNetwork.authType;
   }
 
   _wifiCredentials = {
-    "ssid":$("#txtWifiSsid").val(),
-    "pw":$("#txtWifiPw").val(),
-    "auth":auth
+    ssid: $("#txtWifiSsid").val(),
+    pw: $("#txtWifiPw").val(),
+    auth: auth,
   };
 
   setPhase("containerLoading");
@@ -856,124 +892,133 @@ $("#btnConnectWifi").click(function() {
   $("#txtWifiPw").val("");
 });
 
-$("#btnCustomWifi").click(function() {
+$("#btnCustomWifi").click(function () {
   selectedNetwork = null;
   $("#txtWifiSsid").removeClass("readonly");
   $("#txtWifiSsid").prop("readonly", false);
   setPhase("containerWifiConfig");
 });
 
-$("#passwordReset").click(function() {
+$("#passwordReset").click(function () {
   var email = prompt("Please enter your email:");
   if (email) {
-    doPasswordReset(email)
-    .then(() => {
+    doPasswordReset(email).then(() => {
       alert("We have sent you an email with a link to reset your password");
     });
   }
-})
+});
 
-$("#createAccount").click(function() {
+$("#createAccount").click(function () {
   $("#accountAuth").css("opacity", 0);
   $("#accountAuth").css("visibility", "hidden");
   $("#accountAuth").css("display", "none");
-  
+
   $("#newAccount").css("opacity", 1);
   $("#newAccount").css("visibility", "visible");
   $("#newAccount").css("display", "block");
-})
+});
 
-$("#btnCancelAccountCreation").click(function() {
-  showAccountAuth()
-})
+$("#btnCancelAccountCreation").click(function () {
+  showAccountAuth();
+});
 
 const showAccountAuth = () => {
   $("#newAccount").css("opacity", 0);
   $("#newAccount").css("visibility", "hidden");
   $("#newAccount").css("display", "none");
-  
+
   $("#accountAuth").css("opacity", 1);
   $("#accountAuth").css("visibility", "visible");
   $("#accountAuth").css("display", "block");
-}
+};
 
-$("#btnCreateAccount").click(function() {
-  // let cloudUsername = $("#txtNewAccountUsername").val(); 
+$("#btnCreateAccount").click(function () {
+  // let cloudUsername = $("#txtNewAccountUsername").val();
   let cloudEmail = $("#txtNewAccountEmail").val();
   let cloudPassword = $("#txtNewAccountPw").val();
   let cloudDob = $("#txtNewAccountDob").val();
 
-  var re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}/igm;
+  var re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}/gim;
 
-  if (cloudEmail=="" || !re.test(cloudEmail)) {
-    handleAccountCreationError("Please enter a valid email address")
+  if (cloudEmail == "" || !re.test(cloudEmail)) {
+    handleAccountCreationError("Please enter a valid email address");
     return;
   }
-  
-  createAccount( cloudEmail, cloudPassword, cloudDob)
-    .then(() => {      
+
+  createAccount(cloudEmail, cloudPassword, cloudDob).then(
+    () => {
       showAccountAuth();
 
       // $("#txtNewAccountUsername").val("");
-      $("#txtNewAccountEmail").val("")
-      $("#txtNewAccountPw").val("")
-      $("#txtNewAccountDob").val("")
+      $("#txtNewAccountEmail").val("");
+      $("#txtNewAccountPw").val("");
+      $("#txtNewAccountDob").val("");
+
       alert("We have sent you an email with a link to activate your account");
+    },
+    (data) => {
+      const response = data.responseJSON.message;
 
-    }, (data) => {
-      const response = data.responseJSON.message
-
-      if (response !==undefined) {
-        handleAccountCreationError(response)
+      if (response !== undefined) {
+        handleAccountCreationError(response);
       } else {
-        handleAccountCreationError("Error while creating account. Please try again.")
+        handleAccountCreationError(
+          "Error while creating account. Please try again."
+        );
       }
-    });
-})
+    }
+  );
+});
 
 function handleAccountCreationError(msg) {
   $("#accountCreationErrorLabel").html(msg);
   $("#accountCreationErrorLabel").removeClass("vec-hidden");
 }
 
-$("#btnConnectCloud").click(function() {
-  let cloudUsername = $("#txtAccountUsername").val(); 
+$("#btnConnectCloud").click(function () {
+  let cloudUsername = $("#txtAccountUsername").val();
   let cloudPassword = $("#txtAccountPw").val();
 
   setPhase("containerLoading");
 
   $("#txtAccountPw").val("");
 
-  doCloudLogin(cloudUsername, cloudPassword).then(function(data) {
-    cloudSession.sesionToken = data.session.session_token;
+  doCloudLogin(cloudUsername, cloudPassword).then(
+    function (data) {
+      cloudSession.sesionToken = data.session.session_token;
 
-    rtsHandler.doAnkiAuth(cloudSession.sesionToken).then(function(msg) {
-      if(msg.value.success) {
-        cloudSession.clientToken = msg.value.clientTokenGuid;
-        
-        // adjust default timezone
-        let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        let jqtz = $("#selectTimeZone option[value='" + tz + "']");
-        jqtz.prop("selected", "selected");
+      rtsHandler.doAnkiAuth(cloudSession.sesionToken).then(function (msg) {
+        if (msg.value.success) {
+          cloudSession.clientToken = msg.value.clientTokenGuid;
 
-        toggleIcon("iconAccount", true);
-        setPhase("containerSettings");
-        enableLogPanel();
-      } else{
-        // todo: handle case when session token fails
-        handleLoginError("Error in bot authentication. Please try again.");
+          // adjust default timezone
+          let tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          let jqtz = $("#selectTimeZone option[value='" + tz + "']");
+          jqtz.prop("selected", "selected");
+
+          toggleIcon("iconAccount", true);
+          setPhase("containerSettings");
+          enableLogPanel();
+        } else {
+          // todo: handle case when session token fails
+          handleLoginError("Error in bot authentication. Please try again.");
+        }
+      });
+    },
+    function (data) {
+      let msg = "Error logging in. Please try again.";
+      console.log(data);
+      if (
+        data.status == 403 &&
+        data.responseJSON.code == "invalid_username_or_password"
+      ) {
+        msg = data.responseJSON.message;
       }
-    });
-  }, function(data) {
-    let msg = "Error logging in. Please try again.";
-    console.log(data);
-    if (data.status == 403 && data.responseJSON.code == "invalid_username_or_password") {
-      msg = data.responseJSON.message;
-    } 
 
-    handleLoginError(msg)
-  });
-}); 
+      handleLoginError(msg);
+    }
+  );
+});
 
 function handleLoginError(msg) {
   $("#accountErrorLabel").html(msg);
@@ -981,53 +1026,94 @@ function handleLoginError(msg) {
   setPhase("containerAccount");
 }
 
-$("#btnFinishSetup").click(function() {
+$("#btnFinishSetup").click(function () {
   let timezone = $("#selectTimeZone").val();
   let locale = navigator.locale;
   let isFahrenheit = $("#selectTemperature").val() == "fahrenheit";
   let isMetric = $("#selectDistance").val() == "metric";
-  let allowDataAnalytics = $("#checkboxDataAnalytics").is(":checked"); 
+  let allowDataAnalytics = $("#checkboxDataAnalytics").is(":checked");
   let alexaOptIn = $("#checkboxEnableAlexa").is(":checked");
 
   setPhase("containerLoading");
 
-  rtsHandler.doSdk(cloudSession.clientToken, "1", "/v1/alexa_opt_in", '{ "opt_in":' + alexaOptIn + ' }')
-  .then(function(alexaRes) {
-    // todo: check response for status 200
-    rtsHandler.doSdk(cloudSession.clientToken, "1", "/v1/update_account_settings", '{ "account_settings":{ "data_collection":' + allowDataAnalytics + ', "app_locale":"' + locale + '"} }')
-    .then(function(response) { 
+  rtsHandler
+    .doSdk(
+      cloudSession.clientToken,
+      "1",
+      "/v1/alexa_opt_in",
+      JSON.stringify({ opt_in: alexaOptIn })
+    )
+    .then(function (alexaRes) {
       // todo: check response for status 200
-      rtsHandler.doSdk(cloudSession.clientToken, "1", "/v1/update_settings", '{ "settings":{ "time_zone":"' + timezone + '", "locale":"' + locale + '", "dist_is_metric":' + isMetric + ', "temp_is_fahrenheit":' + isFahrenheit + '} }')
-      .then(function(settingsResponse) { 
-        // todo: check response for status 200 then wake
-        rtsHandler.doSdk(cloudSession.clientToken, "1", "/v1/send_onboarding_input", '{"onboarding_mark_complete_and_exit": {}}')
-        .then(function(msg) { 
-          toggleIcon("iconSettings", true);
-          setPhase("containerComplete");
+      rtsHandler
+        .doSdk(
+          cloudSession.clientToken,
+          "1",
+          "/v1/update_account_settings",
+          '{ "account_settings":{ "data_collection":' +
+            allowDataAnalytics +
+            ', "app_locale":"' +
+            locale +
+            '"} }'
+        )
+        .then(function (response) {
+          // todo: check response for status 200
+          rtsHandler
+            .doSdk(
+              cloudSession.clientToken,
+              "1",
+              "/v1/update_settings",
+              JSON.stringify({
+                settings: {
+                  time_zone: timezone,
+                  locale: locale,
+                  dist_is_metric: isMetric,
+                  temp_is_fahrenheit: isFahrenheit,
+                },
+              })
+            )
+            .then(function (settingsResponse) {
+              // todo: check response for status 200 then wake
+              rtsHandler
+                .doSdk(
+                  cloudSession.clientToken,
+                  "1",
+                  "/v1/send_onboarding_input",
+                  JSON.stringify({
+                    onboarding_mark_complete_and_exit: {},
+                  })
+                )
+                .then(function (msg) {
+                  toggleIcon("iconSettings", true);
+                  setPhase("containerComplete");
+                });
+            });
         });
-      });
     });
-  });
 });
 
-$('#txtAccountPwEye').click(function() {
+$("#txtAccountPwEye").click(function () {
   let pwId = "#" + $(this).attr("target");
-  if($(this).attr("state") == "visible") {
-    $(this).attr("state", "hidden"); 
-    $(this).children(".vec-eyecon").attr("src", "../images/fontawesome/eye-solid.svg");
+  if ($(this).attr("state") == "visible") {
+    $(this).attr("state", "hidden");
+    $(this)
+      .children(".vec-eyecon")
+      .attr("src", "../images/fontawesome/eye-solid.svg");
     $(pwId).attr("type", "text");
   } else {
     $(this).attr("state", "visible");
-    $(this).children(".vec-eyecon").attr("src", "../images/fontawesome/eye-slash-solid.svg");
+    $(this)
+      .children(".vec-eyecon")
+      .attr("src", "../images/fontawesome/eye-slash-solid.svg");
     $(pwId).attr("type", "password");
   }
 });
 
-$('#btnDownloadLogs').click(function() {
-  $('#btnDownloadLogs').addClass("vec-hidden");
-  $('#panelLogs').removeClass("vec-hidden");
-  rtsHandler.doLog().then(function() {
-    $('#btnDownloadLogs').removeClass("vec-hidden");
-    $('#panelLogs').addClass("vec-hidden");
+$("#btnDownloadLogs").click(function () {
+  $("#btnDownloadLogs").addClass("vec-hidden");
+  $("#panelLogs").removeClass("vec-hidden");
+  rtsHandler.doLog().then(function () {
+    $("#btnDownloadLogs").removeClass("vec-hidden");
+    $("#panelLogs").addClass("vec-hidden");
   });
 });

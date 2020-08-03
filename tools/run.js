@@ -14,7 +14,7 @@ const { filePath } = require("./common.js");
 
 const app = express();
 
-const PORT = 8000;
+let port = 8000;
 const IP = getIp();
 
 app.set("view engine", "ejs");
@@ -23,7 +23,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get("/", (req, res) => {
-  res.render(path.join(__dirname, "../templates/main.ejs"), { ip: IP });
+  res.render(path.join(__dirname, "../templates/main.ejs"), {
+    ip: IP,
+    port: port,
+  });
 });
 
 app.post("/firmware", async (req, res) => {
@@ -41,14 +44,17 @@ app.post("/firmware", async (req, res) => {
   }
 });
 
-try {
-  if (fs.existsSync(filePath.SETTINGS_FILE)) {
-    app.listen(PORT);
-    console.log(`Vector setup running on http://localhost:${PORT}`);
-  } else {
-    console.log("Seems like you have missed this step 'configure'!");
-    console.log("E.g. 'npm run vector-setup configure'");
+module.exports = (portReq) => {
+  port = portReq === undefined ? 8000 : portReq;
+  try {
+    if (fs.existsSync(filePath.SETTINGS_FILE)) {
+      app.listen(port);
+      console.log(`Vector setup running on http://localhost:${port}`);
+    } else {
+      console.log("Seems like you have missed this step 'configure'!");
+      console.log("E.g. 'npm run vector-setup configure'");
+    }
+  } catch (err) {
+    console.log(err);
   }
-} catch (err) {
-  console.log(err);
-}
+};

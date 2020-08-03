@@ -1,20 +1,17 @@
 /* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
 class Blesh {
-  constructor() {
-  } 
+  constructor() {}
 
   static isSupported() {
     return false;
   }
 
-  onReceiveData(fnc) {
-  }
+  onReceiveData(fnc) {}
 
-  send(data) {
-  }
+  send(data) {}
 
   start(port) {
-    let p = new Promise(function(resolve, reject) {
+    let p = new Promise(function (resolve, reject) {
       resolve(false);
     });
 
