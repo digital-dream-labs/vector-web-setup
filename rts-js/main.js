@@ -27,6 +27,7 @@ let _settings = null;
 let _stack = null;
 let _otaEndpoint = null;
 let _serverIp = null;
+let _serverPort = null;
 let urlParams = {};
 let _statusInterval = null;
 let _enableAutoFlow = true;
@@ -145,7 +146,7 @@ function setupOTAFiles() {
     }
 
     var localOtas = data.message;
-    var localUrlPrefix = `http://${_serverIp}:8000/static/firmware/${_stack.name}/`;
+    var localUrlPrefix = `http://${_serverIp}:${_serverPort}/static/firmware/${_stack.name}/`;
     var otaUrls = [];
 
     localOtas.map((endpoint) => {
@@ -202,7 +203,7 @@ function getOtasPresent(env) {
   return new Promise((resolve, reject) => {
     $.ajax({
       type: "POST",
-      url: "http://localhost:8000/firmware",
+      url: `http://localhost:${_serverPort}/firmware`,
       data: {
         env: env,
       },
@@ -443,6 +444,8 @@ $(document).ready(function () {
   });
 
   _serverIp = $("#serverIp").text();
+  _serverPort = $("#serverPort").text();
+  console.log(_serverPort);
 
   // listen to ble messages
   vecBle.onReceive(handleRtsHandshake);
