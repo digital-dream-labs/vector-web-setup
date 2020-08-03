@@ -445,7 +445,6 @@ $(document).ready(function () {
 
   _serverIp = $("#serverIp").text();
   _serverPort = $("#serverPort").text();
-  console.log(_serverPort);
 
   // listen to ble messages
   vecBle.onReceive(handleRtsHandshake);
