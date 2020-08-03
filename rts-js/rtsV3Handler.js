@@ -1,9 +1,11 @@
 /* Copyright (c) 2019-2020 Digital Dream Labs. See LICENSE file for details. */
 
-var { RtsCliUtil } = require('./rtsCliUtil.js');
-var { Anki } = require('./messageExternalComms.js');
+var { RtsCliUtil } = require("./rtsCliUtil.js");
+var { Anki } = require("./messageExternalComms.js");
 
-if(!Rts) { var Rts = Anki.Vector.ExternalComms; }
+if (!Rts) {
+  var Rts = Anki.Vector.ExternalComms;
+}
 
 class RtsV3Handler {
   constructor(vectorBle, sodium, sessions) {
@@ -13,7 +15,7 @@ class RtsV3Handler {
     this.sessions = sessions;
     this.encrypted = false;
     this.keysAuthorized = false;
-    this.waitForResponse = '';
+    this.waitForResponse = "";
     this.promiseKeys = {};
 
     // remembered state
@@ -89,17 +91,23 @@ class RtsV3Handler {
   }
 
   enterPin(pin) {
-    let clientKeys = this.sodium.crypto_kx_client_session_keys(this.keys.publicKey, this.keys.privateKey, this.remoteKeys.publicKey);
+    let clientKeys = this.sodium.crypto_kx_client_session_keys(
+      this.keys.publicKey,
+      this.keys.privateKey,
+      this.remoteKeys.publicKey
+    );
     let sharedRx = this.sodium.crypto_generichash(32, clientKeys.sharedRx, pin);
     let sharedTx = this.sodium.crypto_generichash(32, clientKeys.sharedTx, pin);
 
     this.cryptoKeys.decrypt = sharedRx;
     this.cryptoKeys.encrypt = sharedTx;
 
-    this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsAck(
-      new Rts.RtsAck(Rts.RtsConnection_3Tag.RtsNonceMessage)
-    ));
-    
+    this.send(
+      Rts.RtsConnection_3.NewRtsConnection_3WithRtsAck(
+        new Rts.RtsAck(Rts.RtsConnection_3Tag.RtsNonceMessage)
+      )
+    );
+
     this.encrypted = true;
   }
 
@@ -108,12 +116,16 @@ class RtsV3Handler {
   }
 
   send(rtsConn3) {
-    let rtsConn = Rts.RtsConnection.NewRtsConnectionWithRtsConnection_3(rtsConn3);
-    let extResponse = Rts.ExternalComms.NewExternalCommsWithRtsConnection(rtsConn);
+    let rtsConn = Rts.RtsConnection.NewRtsConnectionWithRtsConnection_3(
+      rtsConn3
+    );
+    let extResponse = Rts.ExternalComms.NewExternalCommsWithRtsConnection(
+      rtsConn
+    );
 
     let data = extResponse.pack();
 
-    if(this.encrypted) {
+    if (this.encrypted) {
       data = this.encrypt(data);
     }
 
@@ -122,15 +134,15 @@ class RtsV3Handler {
   }
 
   receive(data) {
-    if(this.encrypted) {
+    if (this.encrypted) {
       data = this.decrypt(data);
     }
 
-    if(data == null) {
+    if (data == null) {
       return;
     }
 
-    if(data[0] == 1 && data.length == 5) {
+    if (data[0] == 1 && data.length == 5) {
       // data is handshake so we should bail
       this.cancelConnection();
       return;
@@ -139,12 +151,12 @@ class RtsV3Handler {
     let comms = new Rts.ExternalComms();
     comms.unpack(data);
 
-    if(comms.tag == Rts.ExternalCommsTag.RtsConnection) {
-      switch(comms.value.tag) {
+    if (comms.tag == Rts.ExternalCommsTag.RtsConnection) {
+      switch (comms.value.tag) {
         case Rts.RtsConnectionTag.RtsConnection_3: {
           let rtsMsg = comms.value.value;
 
-          switch(rtsMsg.tag) {
+          switch (rtsMsg.tag) {
             case Rts.RtsConnection_3Tag.RtsConnRequest:
               this.onRtsConnRequest(rtsMsg.value);
               break;
@@ -160,51 +172,54 @@ class RtsV3Handler {
 
             // Post-connection messages
             case Rts.RtsConnection_3Tag.RtsWifiScanResponse_3:
-              this.resolvePromise('wifi-scan', rtsMsg);
+              this.resolvePromise("wifi-scan", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsWifiConnectResponse_3:
-              this.resolvePromise('wifi-connect', rtsMsg);
+              this.resolvePromise("wifi-connect", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsStatusResponse_3:
-              this.resolvePromise('status', rtsMsg);
+              this.resolvePromise("status", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsWifiForgetResponse:
-              this.resolvePromise('wifi-forget', rtsMsg);
+              this.resolvePromise("wifi-forget", rtsMsg);
               break;
-              case Rts.RtsConnection_3Tag.RtsWifiAccessPointResponse:
-              this.resolvePromise('wifi-ap', rtsMsg);
+            case Rts.RtsConnection_3Tag.RtsWifiAccessPointResponse:
+              this.resolvePromise("wifi-ap", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsWifiIpResponse:
-              this.resolvePromise('wifi-ip', rtsMsg);
+              this.resolvePromise("wifi-ip", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsCloudSessionResponse:
-              for(let i = 0; i < this.onCloudAuthorizedEvent.length; i++) {
+              for (let i = 0; i < this.onCloudAuthorizedEvent.length; i++) {
                 this.onCloudAuthorizedEvent[i](rtsMsg.value);
               }
 
-              this.resolvePromise('anki-auth', rtsMsg);
+              this.resolvePromise("anki-auth", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsOtaUpdateResponse:
-              this.otaProgress['value'] = rtsMsg.value;
+              this.otaProgress["value"] = rtsMsg.value;
 
-              for(let i = 0; i < this.onOtaProgressEvent.length; i++) {
+              for (let i = 0; i < this.onOtaProgressEvent.length; i++) {
                 this.onOtaProgressEvent[i](rtsMsg.value);
               }
 
-              if(this.hasProgressBar) {
-                for(let i = 0; i < this.onUpdateProgressBarEvent.length; i++) {
-                  this.onUpdateProgressBarEvent[i](Number(rtsMsg.value.current), Number(rtsMsg.value.expected));
+              if (this.hasProgressBar) {
+                for (let i = 0; i < this.onUpdateProgressBarEvent.length; i++) {
+                  this.onUpdateProgressBarEvent[i](
+                    Number(rtsMsg.value.current),
+                    Number(rtsMsg.value.expected)
+                  );
                 }
               }
 
-              if(this.waitForResponse == 'ota-start') {
-                if(rtsMsg.status == 3) {
+              if (this.waitForResponse == "ota-start") {
+                if (rtsMsg.status == 3) {
                   this.resolvePromise(this.waitForResponse, rtsMsg);
-                } else if(rtsMsg.status >= 5) {
+                } else if (rtsMsg.status >= 5) {
                   this.rejectPromise(this.waitForResponse, rtsMsg);
                 }
-              } else if(this.waitForResponse == 'ota-cancel') {
-                if(rtsMsg.status != 2) {
+              } else if (this.waitForResponse == "ota-cancel") {
+                if (rtsMsg.status != 2) {
                   this.resolvePromise(this.waitForResponse, rtsMsg);
                 }
               }
@@ -213,13 +228,13 @@ class RtsV3Handler {
               this.rejectPromise(this.waitForResponse, rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsSdkProxyResponse:
-              this.resolvePromise('sdk', rtsMsg);
+              this.resolvePromise("sdk", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsAppConnectionIdResponse:
-              this.resolvePromise('connection-id', rtsMsg);
+              this.resolvePromise("connection-id", rtsMsg);
               break;
             case Rts.RtsConnection_3Tag.RtsLogResponse:
-              if(rtsMsg.value.exitCode == 0) {
+              if (rtsMsg.value.exitCode == 0) {
                 this.logId = rtsMsg.value.fileId;
                 this.logFile = [];
               } else {
@@ -228,33 +243,41 @@ class RtsV3Handler {
               break;
             case Rts.RtsConnection_3Tag.RtsFileDownload:
               let chunk = rtsMsg.value;
-              if(chunk.fileId == this.logId) {
+              if (chunk.fileId == this.logId) {
                 this.logFile = this.logFile.concat(chunk.fileChunk);
 
-                for(let i = 0; i < this.onLogProgressEvent.length; i++) {
+                for (let i = 0; i < this.onLogProgressEvent.length; i++) {
                   this.onLogProgressEvent[i](rtsMsg.value);
                 }
 
-                if(this.hasProgressBar) {
-                  for(let i = 0; i < this.onUpdateProgressBarEvent.length; i++) {
-                    this.onUpdateProgressBarEvent[i](chunk.packetNumber, chunk.packetTotal);
+                if (this.hasProgressBar) {
+                  for (
+                    let i = 0;
+                    i < this.onUpdateProgressBarEvent.length;
+                    i++
+                  ) {
+                    this.onUpdateProgressBarEvent[i](
+                      chunk.packetNumber,
+                      chunk.packetTotal
+                    );
                   }
                 }
 
-                if(chunk.packetNumber == chunk.packetTotal) {
+                if (chunk.packetNumber == chunk.packetTotal) {
                   // resolve promise
-                  let fileName = "vector-logs-" + RtsCliUtil.getDateString() + ".tar.bz2";
-                  for(let i = 0; i < this.onLogsDownloadedEvent.length; i++) {
+                  let fileName =
+                    "vector-logs-" + RtsCliUtil.getDateString() + ".tar.bz2";
+                  for (let i = 0; i < this.onLogsDownloadedEvent.length; i++) {
                     this.onLogsDownloadedEvent[i](fileName, this.logFile);
                   }
 
-                  this.resolvePromise('logs', rtsMsg); 
+                  this.resolvePromise("logs", rtsMsg);
                 }
               }
               break;
             default:
               break;
-          } 
+          }
           break;
         }
         default:
@@ -268,7 +291,11 @@ class RtsV3Handler {
     let nonce = new Uint8Array(this.nonces.encrypt);
 
     let cipher = this.sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
-      txt, null, null, nonce, this.cryptoKeys.encrypt
+      txt,
+      null,
+      null,
+      nonce,
+      this.cryptoKeys.encrypt
     );
 
     this.sodium.increment(this.nonces.encrypt);
@@ -283,12 +310,16 @@ class RtsV3Handler {
 
     try {
       data = this.sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(
-        null, c, null, nonce, this.cryptoKeys.decrypt
+        null,
+        c,
+        null,
+        nonce,
+        this.cryptoKeys.decrypt
       );
 
       this.sodium.increment(this.nonces.decrypt);
-    } catch(e) {
-      console.log('error decrypting');
+    } catch (e) {
+      console.log("error decrypting");
       this.sessions.deleteSession(this.remoteKeys.publicKey);
       this.sessions.save();
     }
@@ -297,56 +328,76 @@ class RtsV3Handler {
   }
 
   onRtsConnRequest(msg) {
-    this.remoteKeys = {}
+    this.remoteKeys = {};
     this.remoteKeys.publicKey = msg.publicKey;
 
     let savedSession = this.sessions.getSession(this.remoteKeys.publicKey);
 
-    if(savedSession != null) {
+    if (savedSession != null) {
       this.keys = this.sessions.getKeys();
-      this.cryptoKeys = { encrypt:savedSession.tx, decrypt:savedSession.rx };
+      this.cryptoKeys = { encrypt: savedSession.tx, decrypt: savedSession.rx };
       this.firstTimePair = false;
 
       // use saved session
-      this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
-        new Rts.RtsConnResponse(Rts.RtsConnType.Reconnection, this.keys.publicKey)
-      ));  
-    } else if(this.remoteKeys.publicKey.toString() in this.vectorBle.sessions) {
-      let session = this.vectorBle.sessions[this.remoteKeys.publicKey.toString()];
+      this.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
+          new Rts.RtsConnResponse(
+            Rts.RtsConnType.Reconnection,
+            this.keys.publicKey
+          )
+        )
+      );
+    } else if (
+      this.remoteKeys.publicKey.toString() in this.vectorBle.sessions
+    ) {
+      let session = this.vectorBle.sessions[
+        this.remoteKeys.publicKey.toString()
+      ];
       this.keys = session.myKeys;
       this.cryptoKeys = session.cryptoKeys;
       this.firstTimePair = false;
 
       // use saved session
-      this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
-        new Rts.RtsConnResponse(Rts.RtsConnType.Reconnection, this.keys.publicKey)
-      )); 
+      this.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
+          new Rts.RtsConnResponse(
+            Rts.RtsConnType.Reconnection,
+            this.keys.publicKey
+          )
+        )
+      );
     } else {
       // generate keys
       this.keys = this.sodium.crypto_kx_keypair();
       let self = this;
-      this.connRequestHandle = setTimeout(function() {
+      this.connRequestHandle = setTimeout(function () {
         self.cancelConnection();
       }, 3000);
-      this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
-        new Rts.RtsConnResponse(Rts.RtsConnType.FirstTimePair, this.keys.publicKey)
-      ));
+      this.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsConnResponse(
+          new Rts.RtsConnResponse(
+            Rts.RtsConnType.FirstTimePair,
+            this.keys.publicKey
+          )
+        )
+      );
     }
   }
 
   cancelConnection() {
-    let msg = "\x1b[91mPairing failed. Double press robot button and try again. You may need to do \'ble-clear\'.\x1b[0m";
-    for(let i = 0; i < this.onPrintEvent.length; i++) {
+    let msg =
+      "\x1b[91mPairing failed. Double press robot button and try again. You may need to do 'ble-clear'.\x1b[0m";
+    for (let i = 0; i < this.onPrintEvent.length; i++) {
       this.onPrintEvent[i](msg);
     }
     this.vectorBle.tryDisconnect();
-    for(let i = 0; i < this.onCommandDoneEvent.length; i++) {
+    for (let i = 0; i < this.onCommandDoneEvent.length; i++) {
       this.onCommandDoneEvent[i]();
     }
   }
 
   onRtsNonceMessage(msg) {
-    if(this.connRequestHandle != null) {
+    if (this.connRequestHandle != null) {
       clearTimeout(this.connRequestHandle);
       this.connRequestHandle = null;
     }
@@ -355,33 +406,40 @@ class RtsV3Handler {
     this.nonces.decrypt = msg.toDeviceNonce;
     this.nonces.encrypt = msg.toRobotNonce;
 
-    if(!this.firstTimePair) {
+    if (!this.firstTimePair) {
       // No need to enter pin
-      this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsAck(
-        new Rts.RtsAck(Rts.RtsConnection_3Tag.RtsNonceMessage)
-      ));
-      
+      this.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsAck(
+          new Rts.RtsAck(Rts.RtsConnection_3Tag.RtsNonceMessage)
+        )
+      );
+
       this.encrypted = true;
       return;
     }
 
-    for(let i = 0; i < this.onReadyForPinEvent.length; i++) {
+    for (let i = 0; i < this.onReadyForPinEvent.length; i++) {
       this.onReadyForPinEvent[i](this);
     }
   }
 
   onRtsChallengeMessage(msg) {
-    this.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsChallengeMessage(
-      new Rts.RtsChallengeMessage(msg.number + 1)
-    ));
+    this.send(
+      Rts.RtsConnection_3.NewRtsConnection_3WithRtsChallengeMessage(
+        new Rts.RtsChallengeMessage(msg.number + 1)
+      )
+    );
   }
 
   onRtsChallengeSuccessMessage(msg) {
     this.keysAuthorized = true;
-    this.vectorBle.sessions[this.remoteKeys.publicKey.toString()] = { cryptoKeys:this.cryptoKeys, myKeys:this.keys };
+    this.vectorBle.sessions[this.remoteKeys.publicKey.toString()] = {
+      cryptoKeys: this.cryptoKeys,
+      myKeys: this.keys,
+    };
 
     // successfully received rtsChallengeSuccessMessage
-    for(let i = 0; i < this.onEncryptedConnectionEvent.length; i++) {
+    for (let i = 0; i < this.onEncryptedConnectionEvent.length; i++) {
       this.onEncryptedConnectionEvent[i](this);
     }
   }
@@ -393,14 +451,14 @@ class RtsV3Handler {
   }
 
   resolvePromise(str, msg) {
-    if(this.promiseKeys[str] != null) {
+    if (this.promiseKeys[str] != null) {
       this.promiseKeys[str].resolve(msg);
       this.promiseKeys[str] = null;
     }
   }
 
   rejectPromise(str, msg) {
-    if(this.promiseKeys[str] != null) {
+    if (this.promiseKeys[str] != null) {
       this.promiseKeys[str].reject(msg);
       this.promiseKeys[str] = null;
     }
@@ -409,17 +467,17 @@ class RtsV3Handler {
   cliResolve(msg) {
     let output = "";
 
-    if(msg == null) {
-      output = 'Request timed out.';
+    if (msg == null) {
+      output = "Request timed out.";
     } else {
       output = RtsCliUtil.msgToStr(msg.value);
     }
 
-    for(let i = 0; i < this.onCliResponseEvent.length; i++) {
+    for (let i = 0; i < this.onCliResponseEvent.length; i++) {
       this.onCliResponseEvent[i](output);
     }
 
-    this.waitForResponse = '';
+    this.waitForResponse = "";
   }
 
   //
@@ -428,11 +486,13 @@ class RtsV3Handler {
 
   doWifiScan() {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('wifi-scan', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiScanRequest(
-        new Rts.RtsWifiScanRequest()
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("wifi-scan", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiScanRequest(
+          new Rts.RtsWifiScanRequest()
+        )
+      );
     });
 
     return p;
@@ -440,25 +500,35 @@ class RtsV3Handler {
 
   doWifiConnect(ssid, password, auth, timeout) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('wifi-connect', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiConnectRequest(
-        new Rts.RtsWifiConnectRequest(RtsCliUtil.convertStrToHex(ssid), password, timeout, auth, false)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("wifi-connect", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiConnectRequest(
+          new Rts.RtsWifiConnectRequest(
+            RtsCliUtil.convertStrToHex(ssid),
+            password,
+            timeout,
+            auth,
+            false
+          )
+        )
+      );
     });
 
     return p;
   }
-  
+
   doWifiForget(ssid) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('wifi-forget', resolve, reject);
-      let deleteAll = ssid == '!all';
-      let hexSsid = deleteAll? '' : RtsCliUtil.convertStrToHex(ssid);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiForgetRequest(
-        new Rts.RtsWifiForgetRequest(deleteAll, hexSsid)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("wifi-forget", resolve, reject);
+      let deleteAll = ssid == "!all";
+      let hexSsid = deleteAll ? "" : RtsCliUtil.convertStrToHex(ssid);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiForgetRequest(
+          new Rts.RtsWifiForgetRequest(deleteAll, hexSsid)
+        )
+      );
     });
 
     return p;
@@ -466,11 +536,13 @@ class RtsV3Handler {
 
   doWifiAp(enable) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('wifi-ap', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiAccessPointRequest(
-        new Rts.RtsWifiAccessPointRequest(enable.toLowerCase() == 'true')
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("wifi-ap", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiAccessPointRequest(
+          new Rts.RtsWifiAccessPointRequest(enable.toLowerCase() == "true")
+        )
+      );
     });
 
     return p;
@@ -478,11 +550,13 @@ class RtsV3Handler {
 
   doWifiIp() {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('wifi-ip', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiIpRequest(
-        new Rts.RtsWifiIpRequest()
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("wifi-ip", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsWifiIpRequest(
+          new Rts.RtsWifiIpRequest()
+        )
+      );
     });
 
     return p;
@@ -490,11 +564,13 @@ class RtsV3Handler {
 
   doStatus() {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('status', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsStatusRequest(
-        new Rts.RtsStatusRequest()
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("status", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsStatusRequest(
+          new Rts.RtsStatusRequest()
+        )
+      );
     });
 
     return RtsCliUtil.addTimeout(p);
@@ -502,11 +578,13 @@ class RtsV3Handler {
 
   doAnkiAuth(sessionToken) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('anki-auth', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsCloudSessionRequest(
-        new Rts.RtsCloudSessionRequest(sessionToken)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("anki-auth", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsCloudSessionRequest(
+          new Rts.RtsCloudSessionRequest(sessionToken)
+        )
+      );
     });
 
     return p;
@@ -514,11 +592,13 @@ class RtsV3Handler {
 
   doOtaStart(url) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('ota-start', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsOtaUpdateRequest(
-        new Rts.RtsOtaUpdateRequest(url)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("ota-start", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsOtaUpdateRequest(
+          new Rts.RtsOtaUpdateRequest(url)
+        )
+      );
     });
 
     return p;
@@ -526,11 +606,13 @@ class RtsV3Handler {
 
   doOtaCancel(url) {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('ota-cancel', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsOtaCancelRequest(
-        new Rts.RtsOtaCancelRequest(url)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("ota-cancel", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsOtaCancelRequest(
+          new Rts.RtsOtaCancelRequest(url)
+        )
+      );
     });
 
     return p;
@@ -538,11 +620,13 @@ class RtsV3Handler {
 
   doConnectionId() {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('connection-id', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsAppConnectionIdRequest(
-        new Rts.RtsAppConnectionIdRequest(url)
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("connection-id", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsAppConnectionIdRequest(
+          new Rts.RtsAppConnectionIdRequest(url)
+        )
+      );
     });
 
     return p;
@@ -550,19 +634,23 @@ class RtsV3Handler {
 
   doLog() {
     let self = this;
-    let p = new Promise(function(resolve, reject) {
-      self.storePromiseMethods('logs', resolve, reject);
-      self.send(Rts.RtsConnection_3.NewRtsConnection_3WithRtsLogRequest(
-        new Rts.RtsLogRequest(0, [])
-      ));
+    let p = new Promise(function (resolve, reject) {
+      self.storePromiseMethods("logs", resolve, reject);
+      self.send(
+        Rts.RtsConnection_3.NewRtsConnection_3WithRtsLogRequest(
+          new Rts.RtsLogRequest(0, [])
+        )
+      );
     });
 
     return p;
   }
 
   requireArgs(args, num) {
-    if(args.length < num) {
-      console.log('"' + args[0] + '" command requires ' + (num-1) + ' arguments');
+    if (args.length < num) {
+      console.log(
+        '"' + args[0] + '" command requires ' + (num - 1) + " arguments"
+      );
       return false;
     }
 
@@ -574,195 +662,233 @@ class RtsV3Handler {
   //
   setCliHelp() {
     let helpArgs = {
-      'wifi-connect':{  args:2, 
-                        des:'Connect Vector to a WiFi network.',
-                        help:'wifi-connect {ssid} {password}' },
-      'wifi-scan':{     args:0, 
-                        des:'Get WiFi networks that Vector can scan.',
-                        help:'wifi-scan' },
-      'wifi-ip':{       args:0, 
-                        des:'Get Vector\'s WiFi IPv4/IPv6 addresses.',
-                        help:'wifi-ip' },
-      'wifi-ap':{       args:1, 
-                        des:'Enable/Disable Vector as a WiFi access point.',
-                        help:'wifi-ap {true|false}' },
-      'wifi-forget':{   args:1, 
-                        des:'Forget a WiFi network, or optionally all of them.',
-                        help:'wifi-forget {ssid|!all}' },
-      'ota-start':{     args:1, 
-                        des:'Tell Vector to start an OTA update with the given URL.',
-                        help:'ota-start {url}' },
-      'ota-progress':{  args:0, 
-                        des:'Get the current OTA progress.',
-                        help:'ota-progress' },
-      'ota-cancel':{    args:0, 
-                        des:'Cancel an OTA in progress.',
-                        help:'ota-cancel' },
-      'logs':{          args:0, 
-                        des:'Download logs over BLE from Vector.',
-                        help:'logs' },
-      'status':{        args:0, 
-                        des:'Get status information from Vector.',
-                        help:'status' },
-      'anki-auth':{     args:1, 
-                        des:'Provision Vector with Anki account.',
-                        help:'anki-auth {session_token}' },
-      'connection-id':{ args:1, 
-                        des:'Give Vector a DAS/analytics id for this BLE session.',
-                        help:'connection-id {id}' },
-      'sdk':{           args:3, 
-                        des:'Send an SDK request over BLE.',
-                        help:'sdk {path} {json} {client_app_guid}' }
+      "wifi-connect": {
+        args: 2,
+        des: "Connect Vector to a WiFi network.",
+        help: "wifi-connect {ssid} {password}",
+      },
+      "wifi-scan": {
+        args: 0,
+        des: "Get WiFi networks that Vector can scan.",
+        help: "wifi-scan",
+      },
+      "wifi-ip": {
+        args: 0,
+        des: "Get Vector's WiFi IPv4/IPv6 addresses.",
+        help: "wifi-ip",
+      },
+      "wifi-ap": {
+        args: 1,
+        des: "Enable/Disable Vector as a WiFi access point.",
+        help: "wifi-ap {true|false}",
+      },
+      "wifi-forget": {
+        args: 1,
+        des: "Forget a WiFi network, or optionally all of them.",
+        help: "wifi-forget {ssid|!all}",
+      },
+      "ota-start": {
+        args: 1,
+        des: "Tell Vector to start an OTA update with the given URL.",
+        help: "ota-start {url}",
+      },
+      "ota-progress": {
+        args: 0,
+        des: "Get the current OTA progress.",
+        help: "ota-progress",
+      },
+      "ota-cancel": {
+        args: 0,
+        des: "Cancel an OTA in progress.",
+        help: "ota-cancel",
+      },
+      logs: {
+        args: 0,
+        des: "Download logs over BLE from Vector.",
+        help: "logs",
+      },
+      status: {
+        args: 0,
+        des: "Get status information from Vector.",
+        help: "status",
+      },
+      "anki-auth": {
+        args: 1,
+        des: "Provision Vector with Anki account.",
+        help: "anki-auth {session_token}",
+      },
+      "connection-id": {
+        args: 1,
+        des: "Give Vector a DAS/analytics id for this BLE session.",
+        help: "connection-id {id}",
+      },
+      sdk: {
+        args: 3,
+        des: "Send an SDK request over BLE.",
+        help: "sdk {path} {json} {client_app_guid}",
+      },
     };
 
     this.helpArgs = helpArgs;
 
-    return helpArgs
+    return helpArgs;
   }
 
   handleCli(args) {
     let self = this;
     let cmd = args[0];
-    let r = function(msg) { self.cliResolve(msg); };
+    let r = function (msg) {
+      self.cliResolve(msg);
+    };
     let output = "";
 
-    switch(cmd) {
+    switch (cmd) {
       case "quit":
       case "exit":
         self.vectorBle.tryDisconnect();
         return false;
       case "help":
         output = RtsCliUtil.printHelp(self.helpArgs);
-        for(let i = 0; i < this.onPrintEvent.length; i++) {
+        for (let i = 0; i < this.onPrintEvent.length; i++) {
           this.onPrintEvent[i](output);
         }
         break;
       case "wifi-scan":
-        self.waitForResponse = 'wifi-scan';
-        self.doWifiScan().then(function(msg) {
+        self.waitForResponse = "wifi-scan";
+        self.doWifiScan().then(function (msg) {
           self.wifiScanResults = msg.value.scanResult;
           self.cliResolve(msg);
         }, r);
         break;
       case "wifi-connect":
-        if(!self.requireArgs(args, 3)) break;
+        if (!self.requireArgs(args, 3)) break;
 
-        self.waitForResponse = 'wifi-connect';
+        self.waitForResponse = "wifi-connect";
 
         let ssid = args[1];
         let hasScanned = false;
         let result = null;
 
-        for(let i = 0; i < self.wifiScanResults.length; i++) {
+        for (let i = 0; i < self.wifiScanResults.length; i++) {
           let r = self.wifiScanResults[i];
 
-          if(ssid == RtsCliUtil.convertHexToStr(r.wifiSsidHex)) {
+          if (ssid == RtsCliUtil.convertHexToStr(r.wifiSsidHex)) {
             result = r;
             hasScanned = true;
             break;
           }
         }
 
-        self.doWifiConnect(
-          ssid, 
-          args[2], 
-          (hasScanned? result.authType : 6), 
-          15).then(function(msg) { self.cliResolve(msg); }, r);
+        self
+          .doWifiConnect(ssid, args[2], hasScanned ? result.authType : 6, 15)
+          .then(function (msg) {
+            self.cliResolve(msg);
+          }, r);
 
         break;
       case "status":
-        self.waitForResponse = 'status';
-        self.doStatus().then(function(msg) { self.cliResolve(msg); }, r);
+        self.waitForResponse = "status";
+        self.doStatus().then(function (msg) {
+          self.cliResolve(msg);
+        }, r);
         break;
       case "wifi-ip":
-        self.waitForResponse = 'wifi-ip';
-        self.doWifiIp().then(function(msg) { self.cliResolve(msg); }, r);
+        self.waitForResponse = "wifi-ip";
+        self.doWifiIp().then(function (msg) {
+          self.cliResolve(msg);
+        }, r);
         break;
       case "wifi-forget":
-        if(!self.requireArgs(args, 2)) break;
+        if (!self.requireArgs(args, 2)) break;
 
-        self.waitForResponse = 'wifi-forget';
-        self.doWifiForget(args[1]).then(function(msg) { 
-          self.cliResolve(msg); 
+        self.waitForResponse = "wifi-forget";
+        self.doWifiForget(args[1]).then(function (msg) {
+          self.cliResolve(msg);
         }, r);
         break;
       case "wifi-ap":
-        if(!self.requireArgs(args, 2)) break;
+        if (!self.requireArgs(args, 2)) break;
 
-        self.waitForResponse = 'wifi-ap';
-        self.doWifiAp(args[1]).then(function(msg) { 
-          self.cliResolve(msg); 
+        self.waitForResponse = "wifi-ap";
+        self.doWifiAp(args[1]).then(function (msg) {
+          self.cliResolve(msg);
         }, r);
         break;
       case "anki-auth":
-        if(!self.requireArgs(args, 2)) break;
+        if (!self.requireArgs(args, 2)) break;
 
-        self.waitForResponse = 'anki-auth';
-        self.doAnkiAuth(args[1]).then(function(msg) { self.cliResolve(msg); }, r);
+        self.waitForResponse = "anki-auth";
+        self.doAnkiAuth(args[1]).then(function (msg) {
+          self.cliResolve(msg);
+        }, r);
         break;
       case "ota-start":
-        if(!self.requireArgs(args, 2)) break;
+        if (!self.requireArgs(args, 2)) break;
 
-        self.waitForResponse = 'ota-start';
+        self.waitForResponse = "ota-start";
         self.hasProgressBar = true;
-        output = "Updating robot with OTA from " + args[1]; 
-        for(let i = 0; i < this.onPrintEvent.length; i++) {
+        output = "Updating robot with OTA from " + args[1];
+        for (let i = 0; i < this.onPrintEvent.length; i++) {
           this.onPrintEvent[i](output);
         }
-        for(let i = 0; i < this.onNewProgressBarEvent.length; i++) {
+        for (let i = 0; i < this.onNewProgressBarEvent.length; i++) {
           this.onNewProgressBarEvent[i]();
         }
 
-        self.doOtaStart(args[1]).then(function(msg) { 
+        self.doOtaStart(args[1]).then(function (msg) {
           self.otaProgress.value = msg.value;
           self.hasProgressBar = false;
-          self.cliResolve(msg); 
+          self.cliResolve(msg);
         }, r);
         break;
       case "ota-cancel":
-        self.waitForResponse = 'ota-cancel';
-        self.doOtaCancel().then(function(msg) { 
+        self.waitForResponse = "ota-cancel";
+        self.doOtaCancel().then(function (msg) {
           self.otaProgress.value = msg.value;
-          self.cliResolve(msg); 
+          self.cliResolve(msg);
         }, r);
         break;
       case "ota-progress":
-        if(self.otaProgress.value != null) {
-          console.log(RtsCliUtil.rtsOtaUpdateResponseStr(self.otaProgress.value));
+        if (self.otaProgress.value != null) {
+          console.log(
+            RtsCliUtil.rtsOtaUpdateResponseStr(self.otaProgress.value)
+          );
         }
-        
+
         break;
       case "connection-id":
-        if(!self.requireArgs(args, 2)) break;
+        if (!self.requireArgs(args, 2)) break;
 
-        self.waitForResponse = 'connection-id';
-        self.doConnectionId().then(function(msg) { 
-          self.cliResolve(msg); 
+        self.waitForResponse = "connection-id";
+        self.doConnectionId().then(function (msg) {
+          self.cliResolve(msg);
         }, r);
         break;
       case "logs":
-        console.log('downloading logs over BLE will probably take about 30 seconds...');
-        self.waitForResponse = 'logs';
+        console.log(
+          "downloading logs over BLE will probably take about 30 seconds..."
+        );
+        self.waitForResponse = "logs";
         self.hasProgressBar = true;
         output = "Downloading logs...";
-        for(let i = 0; i < this.onPrintEvent.length; i++) {
+        for (let i = 0; i < this.onPrintEvent.length; i++) {
           this.onPrintEvent[i](output);
         }
-        for(let i = 0; i < this.onNewProgressBarEvent.length; i++) {
+        for (let i = 0; i < this.onNewProgressBarEvent.length; i++) {
           this.onNewProgressBarEvent[i]();
         }
 
-        self.doLog().then(function(msg) {
+        self.doLog().then(function (msg) {
           self.hasProgressBar = false;
-          self.cliResolve(msg); 
+          self.cliResolve(msg);
         }, r);
         break;
       default:
-        self.waitForResponse = '';
+        self.waitForResponse = "";
         break;
     }
 
-    if(self.waitForResponse == '') {
+    if (self.waitForResponse == "") {
       return true;
     }
 
