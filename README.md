@@ -62,7 +62,7 @@ GooeyChickenman files as a replacement:
 1. Download the file: `vector-web-setup ota-sync`
 1. Install it on a robot by running the software and selecting the new
     file.
-1. Sign the file after you've verified it's good: `vector-web-setup ota-sign`
+1. Sign the file after you've verified it's good: `vector-web-setup ota-approve 1.6.0.3331.ota`
 
 ### Example: Add OSKR image locally
 
