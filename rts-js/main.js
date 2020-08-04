@@ -27,6 +27,7 @@ let _settings = null;
 let _stack = null;
 let _otaEndpoint = null;
 let _serverIp = null;
+let _networkIp = null;
 let _serverPort = null;
 let urlParams = {};
 let _statusInterval = null;
@@ -146,7 +147,8 @@ function setupOTAFiles() {
     }
 
     var localOtas = data.message;
-    var localUrlPrefix = `http://${_serverIp}:${_serverPort}/static/firmware/${_stack.name}/`;
+
+    var localUrlPrefix = `http://${_networkIp}:${_serverPort}/static/firmware/${_stack.name}/`;
     var otaUrls = [];
 
     localOtas.map((endpoint) => {
@@ -154,6 +156,8 @@ function setupOTAFiles() {
       obj.type = TYPE.LOCAL;
       otaUrls.push(obj);
     });
+
+    console.log(otaUrls);
 
     setPhase("containerOta");
 
@@ -203,7 +207,7 @@ function getOtasPresent(env) {
   return new Promise((resolve, reject) => {
     $.ajax({
       type: "POST",
-      url: `http://localhost:${_serverPort}/firmware`,
+      url: `http://${_serverIp}:${_serverPort}/firmware`,
       data: {
         env: env,
       },
@@ -444,6 +448,7 @@ $(document).ready(function () {
   });
 
   _serverIp = $("#serverIp").text();
+  _networkIp = $("#networkIp").text();
   _serverPort = $("#serverPort").text();
 
   // listen to ble messages

@@ -28,8 +28,17 @@ program
   .command("serve")
   .description("Serve the vector websetup")
   .option("-p, --port <number>", "port to serve the setup on", 8000)
+  .option(
+    "-ip, --ip-address <addr>",
+    "address to serve the setup on",
+    "0.0.0.0"
+  )
   .action((options) => {
-    require("./tools/run.js")(options.port);
+    try {
+      require("./tools/run.js")(options.port, options.ipAddress);
+    } catch (err) {
+      console.log(err);
+    }
   });
 
 program.parse(process.argv);
