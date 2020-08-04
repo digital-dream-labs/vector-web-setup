@@ -52,7 +52,7 @@ module.exports = (portReq) => {
       console.log(`Vector setup running on http://localhost:${port}`);
     } else {
       console.log("Seems like you have missed this step 'configure'!");
-      console.log("E.g. 'npm run vector-setup configure'");
+      console.log("E.g. 'vector-web-setup configure'");
     }
   } catch (err) {
     console.log(err);
