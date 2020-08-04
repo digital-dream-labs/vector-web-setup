@@ -47,7 +47,10 @@ app.post("/firmware", async (req, res) => {
 module.exports = (portReq) => {
   port = portReq === undefined ? 8000 : portReq;
   try {
-    if (fs.existsSync(filePath.SETTINGS_FILE)) {
+    if (
+      fs.existsSync(filePath.SETTINGS_FILE) &&
+      fs.existsSync(filePath.INVENTORY_FILE)
+    ) {
       app.listen(port);
       console.log(`Vector setup running on http://localhost:${port}`);
     } else {
