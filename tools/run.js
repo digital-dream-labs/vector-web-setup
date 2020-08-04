@@ -70,11 +70,16 @@ const startServer = (portReq, ipReq) => {
     .on("error", (err) => {
       switch (err.code) {
         case "EADDRNOTAVAIL":
-          console.log(`Unable to bind to IP ${ip} on this device`);
+          console.log(`Unable to bind to IP ${serverIp} on this device`);
           return;
         case "EACCES":
           console.log(
-            `Permission denied to bind to IP ${ip} on PORT ${port} on this device.`
+            `Permission denied to bind to IP ${serverIp} on PORT ${port} on this device.`
+          );
+          return;
+        case "EADDRINUSE":
+          console.log(
+            `Permission denied to bind to IP ${serverIp} on PORT ${port} on this device. The address is already in use.`
           );
           return;
         default:
