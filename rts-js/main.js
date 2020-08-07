@@ -980,6 +980,24 @@ function handleAccountCreationError(msg) {
   $("#accountCreationErrorLabel").removeClass("vec-hidden");
 }
 
+$("#txtAccountUsername").keypress(function (e) {
+  var key = e.which;
+  if (key == 13) {
+    // the enter key code
+    $("#txtAccountPw").focus();
+    return false;
+  }
+});
+
+$("#txtAccountPw").keypress(function (e) {
+  var key = e.which;
+  if (key == 13) {
+    // the enter key code
+    $("#btnConnectCloud").click();
+    return false;
+  }
+});
+
 $("#btnConnectCloud").click(function () {
   let cloudUsername = $("#txtAccountUsername").val();
   let cloudPassword = $("#txtAccountPw").val();

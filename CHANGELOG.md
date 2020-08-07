@@ -1,3 +1,6 @@
+* Users can now initiate vector authorization by 
+  pressing enter or clicking on sign-in.
+
 * Fixed usage string to reflect use of packaged node.js app rather
   than source checkout execution.
   
