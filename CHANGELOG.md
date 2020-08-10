@@ -1,3 +1,5 @@
+* Added a stock Docker file for users who prefer docker deployments.
+
 * Users can now initiate vector authorization by 
   pressing enter or clicking on sign-in.
 
