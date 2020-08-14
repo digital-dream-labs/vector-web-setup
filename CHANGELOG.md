@@ -1,3 +1,6 @@
+* When settings.json has a single stack, stack selection screen is
+  skipped automatically .
+
 * Users can now initiate vector authorization by 
   pressing enter or clicking on sign-in.
 

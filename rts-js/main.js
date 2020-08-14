@@ -74,24 +74,33 @@ function parseParams() {
 //************* Settings ******************
 function setupStacks(stacks) {
   var btns = "";
-  var selectedStack;
+
+  if (stacks.length === 1) {
+    handleStackSelection(stacks[0]);
+    return;
+  }
+
   stacks.map((stack) => (btns += generateStackRow(stack)));
 
   $("#envOptions").html(btns);
 
   $(".vec-env-select-btn").click(function () {
     var selectedStack = $("#envOptions").val();
-    _stack = _settings.getStack(selectedStack);
-
-    configurePtrem();
-
-    $("#boxVectorEnv").removeClass("vec-hidden");
-    $("#vecEnv").html(selectedStack);
-
-    toggleIcon("iconEnv", true);
-
-    setPhase("containerDiscover");
+    handleStackSelection(selectedStack);
   });
+}
+
+function handleStackSelection(stackName) {
+  _stack = _settings.getStack(stackName);
+
+  configurePtrem();
+
+  $("#boxVectorEnv").removeClass("vec-hidden");
+  $("#vecEnv").html(stackName);
+
+  toggleIcon("iconEnv", true);
+
+  setPhase("containerDiscover");
 }
 
 function generateStackRow(name) {
