@@ -1,10 +1,11 @@
+* Updated login screen to clarify that your username is your email.
+
 * When settings.json has a single stack, stack selection screen is
   skipped automatically .
 
 * Fized typo so npm run vector-setup works.
 
 * Added a stock Docker file for users who prefer docker deployments.
-
 
 * Users can now initiate vector authorization by 
   pressing enter or clicking on sign-in.
