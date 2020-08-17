@@ -1,3 +1,6 @@
+1.1.0
+=====
+
 * Updated login screen to clarify that your username is your email.
 
 * When settings.json has a single stack, stack selection screen is
