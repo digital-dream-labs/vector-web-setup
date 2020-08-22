@@ -12,10 +12,10 @@ Object.keys(ifaces).forEach((dev) => {
   });
 });
 
-const getIp = () => {
+const getNetworkIp = () => {
   return address;
 };
 
 module.exports = {
-  getIp,
+  getNetworkIp,
 };

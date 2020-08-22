@@ -62,7 +62,7 @@ GooeyChickenman files as a replacement:
 1. Download the file: `vector-web-setup ota-sync`
 1. Install it on a robot by running the software and selecting the new
     file.
-1. Sign the file after you've verified it's good: `vector-web-setup ota-sign`
+1. Sign the file after you've verified it's good: `vector-web-setup ota-approve 1.6.0.3331.ota`
 
 ### Example: Add OSKR image locally
 
@@ -84,7 +84,9 @@ recommended that you open an advisory issue to discuss with the team
 rejected for various reasons.
 
 Any submitted pull request should pass the test suite run with `npm
-test` and will hopefully have additional tests as needed.
+test` and will hopefully have additional tests as needed. It should
+also include a friendly entry in `CHANGLOG.md` describing the
+change/enhancement/fix.
 
 And as always the project can be forked permanantly if you want to make
 significant changes without our permission!

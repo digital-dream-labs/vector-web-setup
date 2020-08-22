@@ -27,6 +27,7 @@ let _settings = null;
 let _stack = null;
 let _otaEndpoint = null;
 let _serverIp = null;
+let _networkIp = null;
 let _serverPort = null;
 let urlParams = {};
 let _statusInterval = null;
@@ -73,24 +74,33 @@ function parseParams() {
 //************* Settings ******************
 function setupStacks(stacks) {
   var btns = "";
-  var selectedStack;
+
+  if (stacks.length === 1) {
+    handleStackSelection(stacks[0]);
+    return;
+  }
+
   stacks.map((stack) => (btns += generateStackRow(stack)));
 
   $("#envOptions").html(btns);
 
   $(".vec-env-select-btn").click(function () {
     var selectedStack = $("#envOptions").val();
-    _stack = _settings.getStack(selectedStack);
-
-    configurePtrem();
-
-    $("#boxVectorEnv").removeClass("vec-hidden");
-    $("#vecEnv").html(selectedStack);
-
-    toggleIcon("iconEnv", true);
-
-    setPhase("containerDiscover");
+    handleStackSelection(selectedStack);
   });
+}
+
+function handleStackSelection(stackName) {
+  _stack = _settings.getStack(stackName);
+
+  configurePtrem();
+
+  $("#boxVectorEnv").removeClass("vec-hidden");
+  $("#vecEnv").html(stackName);
+
+  toggleIcon("iconEnv", true);
+
+  setPhase("containerDiscover");
 }
 
 function generateStackRow(name) {
@@ -146,7 +156,8 @@ function setupOTAFiles() {
     }
 
     var localOtas = data.message;
-    var localUrlPrefix = `http://${_serverIp}:${_serverPort}/static/firmware/${_stack.name}/`;
+
+    var localUrlPrefix = `http://${_networkIp}:${_serverPort}/static/firmware/${_stack.name}/`;
     var otaUrls = [];
 
     localOtas.map((endpoint) => {
@@ -154,6 +165,8 @@ function setupOTAFiles() {
       obj.type = TYPE.LOCAL;
       otaUrls.push(obj);
     });
+
+    console.log(otaUrls);
 
     setPhase("containerOta");
 
@@ -203,7 +216,7 @@ function getOtasPresent(env) {
   return new Promise((resolve, reject) => {
     $.ajax({
       type: "POST",
-      url: `http://localhost:${_serverPort}/firmware`,
+      url: `http://${_serverIp}:${_serverPort}/firmware`,
       data: {
         env: env,
       },
@@ -444,6 +457,7 @@ $(document).ready(function () {
   });
 
   _serverIp = $("#serverIp").text();
+  _networkIp = $("#networkIp").text();
   _serverPort = $("#serverPort").text();
 
   // listen to ble messages
@@ -974,6 +988,24 @@ function handleAccountCreationError(msg) {
   $("#accountCreationErrorLabel").html(msg);
   $("#accountCreationErrorLabel").removeClass("vec-hidden");
 }
+
+$("#txtAccountUsername").keypress(function (e) {
+  var key = e.which;
+  if (key == 13) {
+    // the enter key code
+    $("#txtAccountPw").focus();
+    return false;
+  }
+});
+
+$("#txtAccountPw").keypress(function (e) {
+  var key = e.which;
+  if (key == 13) {
+    // the enter key code
+    $("#btnConnectCloud").click();
+    return false;
+  }
+});
 
 $("#btnConnectCloud").click(function () {
   let cloudUsername = $("#txtAccountUsername").val();

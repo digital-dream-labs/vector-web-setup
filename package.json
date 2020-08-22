@@ -1,11 +1,12 @@
 {
   "name": "vector-web-setup",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "browserify": "^16.5.1",
     "commander": "^5.1.0",
+    "cors": "^2.8.5",
     "ejs": "^3.1.3",
     "express": "^4.17.1",
     "less": "^3.11.2",
@@ -20,7 +21,7 @@
     "mocha": "^8.0.1"
   },
   "scripts": {
-    "vector-setup": "node vector-setup.js",
+    "vector-setup": "node vector-web-setup.js",
     "test": "mocha test/*"
   },
   "author": "Digital Dream Labs",
