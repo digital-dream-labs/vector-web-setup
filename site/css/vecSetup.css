@@ -159,8 +159,8 @@ select.vec-field {
   height: 34px;
   width: 34px;
   border-radius: 100%;
-  background: -webkit-linear-gradient(left top, #000 40%, #4fed94 100%);
-  padding: 3px;
+  background: -webkit-linear-gradient(left top, #4fed94 9%, #000 45%);
+  padding: 2px;
   animation-name: vec-spinner-anim;
   animation-duration: 1s;
   animation-iteration-count: infinite;
