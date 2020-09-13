@@ -54,7 +54,8 @@ configurations to other users.
 
 ### Custom port
 
-You can override the default 8000 port with your own by specifying a number between 0-65535 (avoid using [reserved ports](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
+You can override the default 8000 port with your own by specifying a non-zero number up to 65535 (avoid using [reserved ports](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
+
 Example: `vector-web-setup serve -p 7010` will serve the website at http://localhost:7010.
 
 
