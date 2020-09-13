@@ -52,6 +52,8 @@ has downloaded correctly and completely it is signed with a
 checksum. This allows future users to distribute their own
 configurations to other users.
 
+You can view all supported capabilities by using --help parameter: `vector-web-setup --help`
+
 ### Custom port
 
 You can override the default 8000 port with your own by specifying a non-zero number up to 65535 (avoid using [reserved ports](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
