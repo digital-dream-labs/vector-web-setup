@@ -14,18 +14,18 @@ For now it simply provides an alternative to the existing phone
 application and allows users to maintain local copies of the operating
 system images for redundancy purposes.
 
-The software is written in [Node.js](https://nodejs.org) and has should run anywhere you can
+The software is written in [Node.js](https://nodejs.org) and should run anywhere you can
 run Node.js. It is tested on Windows, Mac OSX, and Linux.
 
-## Normal End User Usage
+## Normal End-User Usage
 
 Most users will simply want to run a copy of the web server locally to
 interact with their robot. They will not need to use github to do
 this.
 
-One time install:
+One-time install:
 
-1. Install [Node.js](https://nodejs.org/en/download/) however that is done on their system.
+1. Install [Node.js](https://nodejs.org/en/download/), however that is done on their system.
 1. Install vector-web-setup package: `npm install -g vector-web-setup`
 1. Perform an initial configuration: `vector-web-setup configure`
 1. Perform a local sync of software files: `vector-web-setup ota-sync`
@@ -36,12 +36,13 @@ Daily usage:
 1. Open a Chrome Browser and go to http://localhost:8000/.
 1. Follow the instructions provided by the web application.
 
-The application talks to the robot via BLE. There is a
+> NOTE:
+The application talks to the robot via Bluetooth Low-Energe protocol (BLE). There is a
 standard for browsers to support this but it is currently only
-implemented on Chrome. Until that changes use of the chrome browser is
-required.
+**implemented on Chrome**. Until that changes, use of the Chrome browser is
+required. BLE is only enabled on `https://` sites or `http://localhost`.
 
-## Admin usage
+## Advanced - Admin usage
 
 As we release firmware to unlock OSKR robots or other alternate
 firmwares users may wish to install different firmwares for
@@ -50,6 +51,14 @@ downloaded and included in the manifest. After verifying that the file
 has downloaded correctly and completely it is signed with a
 checksum. This allows future users to distribute their own
 configurations to other users.
+
+### Custom port
+
+You can override the default 8000 port with your own by specifying a number between 0-65535 (avoid using [reserved ports](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
+Example: `vector-web-setup serve -p 7010` will serve the website at http://localhost:7010.
+
+
+## **Examples**
 
 ### Example: use GooeyChickenman archives
 
@@ -85,9 +94,9 @@ rejected for various reasons.
 
 Any submitted pull request should pass the test suite run with `npm
 test` and will hopefully have additional tests as needed. It should
-also include a friendly entry in `CHANGLOG.md` describing the
+also include a friendly entry in `CHANGELOG.md` describing the
 change/enhancement/fix.
 
-And as always the project can be forked permanantly if you want to make
-significant changes without our permission!
+And as always, the project can be forked permanently if you want to make
+significant changes without needing our permission!
 
