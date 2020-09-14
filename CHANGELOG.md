@@ -1,3 +1,5 @@
+* Added inventory.json file check in serve command
+
 1.1.0
 =====
 

@@ -88,9 +88,13 @@ const startServer = (portReq, ipReq) => {
       }
     });
 };
+
 module.exports = (portReq, ipReq) => {
   try {
-    if (fs.existsSync(filePath.SETTINGS_FILE)) {
+    if (
+      fs.existsSync(filePath.SETTINGS_FILE) &&
+      fs.existsSync(filePath.INVENTORY_FILE)
+    ) {
       startServer(portReq, ipReq);
     } else {
       console.log("Seems like you have missed this step 'configure'!");
