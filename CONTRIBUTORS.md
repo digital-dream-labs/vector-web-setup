@@ -4,3 +4,4 @@ In addition to the staff at Anki and Digital Dream Labs, the following people ha
 
 * Lee Alexis
 * Gavin Hamill
+* Anant Kaushik
