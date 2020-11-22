@@ -437,7 +437,7 @@ function pterm_process_key(event) {
       pterm_current_pos--;
     }
   }
-  else if((32 <= event.keyCode && event.keyCode <= 126) || (event.key.length == 1)) {
+  else if((32 <= event.keyCode && event.keyCode <= 126) || (event.key && event.key.length == 1)) {
     let key = event.key;
 
     pterm_current_line = pterm_current_line.substring(0, pterm_current_pos) + 
