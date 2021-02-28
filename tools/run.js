@@ -7,6 +7,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const cors = require("cors");
+const https = require('https');
 
 const fsPromise = require("../utils/fsPromise");
 const { getNetworkIp } = require("../utils/ip");
@@ -48,12 +49,16 @@ app.post("/firmware", async (req, res) => {
   }
 });
 
+const key = fs.readFileSync('key.pem');
+const cert = fs.readFileSync('cert.pem');
+const server = https.createServer({key: key, cert: cert }, app);
+
 const startServer = (portReq, ipReq) => {
   port = portReq === undefined ? 8000 : portReq;
   serverIp = ipReq === undefined ? "0.0.0.0" : ipReq;
 
   app
-    .listen(port, serverIp, () => {
+    server.listen(port, serverIp, () => {
       console.log(`Server running on ip ${serverIp} and port ${port}`);
 
       let ipToShow = serverIp;
