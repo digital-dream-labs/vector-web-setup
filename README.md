@@ -1,4 +1,6 @@
 # Vector Web Setup
+[https://vector-setup.ddl.io/](https://vector-setup.ddl.io/)
+
 
 Vector Web Setup provides an open source tool to allow users of Vector
 to configure their robot without relying on the proprietary phone
@@ -41,6 +43,8 @@ The application talks to the robot via Bluetooth Low-Energe protocol (BLE). Ther
 standard for browsers to support this but it is currently only
 **implemented on Chrome**. Until that changes, use of the Chrome browser is
 required. BLE is only enabled on `https://` sites or `http://localhost`.
+
+Important: The step to log in your DDL account only works in https://vector-setup.ddl.io/ for now. (localhost gets rejected with 403 Auth error). This might change in future.
 
 ## Advanced - Admin usage
 
